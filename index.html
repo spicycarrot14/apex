@@ -1,0 +1,3171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APEX — Orbital Data Center Command — Space Force 18th Space Squadron</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#040404;--bg2:#0a0a0a;--bg3:#111;
+  --bd:rgba(255,255,255,.08);--bd2:rgba(255,255,255,.14);--bd3:rgba(255,255,255,.24);
+  --bd-ui:rgba(255,255,255,.40);--bd-ui2:#fff;
+  --t1:#fff;--t2:#8c8c8c;--t3:#555;
+  /* MIL-STD-2525D affiliation colors */
+  --mil-friend:  #80E0FF;  /* Friendly   — cyan-blue    */
+  --mil-hostile: #FF8080;  /* Hostile     — salmon-red  */
+  --mil-unknown: #FFFF00;  /* Unknown     — yellow      */
+  --mil-neutral: #AAFFAA;  /* Neutral     — light green */
+  /* Primary accent = MIL-STD Friendly blue */
+  --disp:'Roboto',sans-serif;--mono:'Roboto Mono',monospace;
+  --panel-w:320px;--right-w:340px;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--t1);font-family:var(--disp);display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);
+  background-size:40px 40px}
+:focus{outline:none}
+:focus-visible{outline:2px solid rgba(255,255,255,.7);outline-offset:2px}
+.skip-link{position:absolute;top:-100%;left:0;z-index:9999;background:#fff;color:#000;
+  font-family:var(--mono);font-size:13px;font-weight:700;padding:10px 20px;text-decoration:none;border:2px solid #000}
+.skip-link:focus{top:0}
+
+/* ══ HEADER ══════════════════════════════════════════════ */
+header{position:relative;z-index:10;border-bottom:1px solid var(--bd2);padding:0 22px;
+  display:flex;align-items:stretch;height:58px;flex-shrink:0;background:var(--bg)}
+.hd-left{display:flex;align-items:center;gap:18px;flex:1}
+h1.logo-name{font-size:22px;font-weight:900;letter-spacing:.12em;color:var(--t1);line-height:1;text-transform:uppercase}
+.logo-sub{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.18em;text-transform:uppercase;line-height:1.8;border-left:1px solid var(--bd2);padding-left:14px}
+.vdiv{width:1px;height:24px;background:var(--bd2)}
+/* Three-Tier Stack */
+.tier-stack{display:flex;align-items:center;gap:4px}
+.tier{display:flex;align-items:center;gap:6px;padding:4px 9px;border:1px solid var(--bd);font-family:var(--mono);transition:border-color .3s}
+.tier.active{border-color:rgba(61,214,140,.4)}.tier.active-b{border-color:rgba(255,255,255,.30)}.tier.standby{border-color:var(--bd)}.tier.warn{border-color:rgba(240,192,64,.4)}
+.t-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;transition:background .3s}
+.tier.active .t-dot{background:var(--mil-friend)}.tier.active-b .t-dot{background:rgba(255,255,255,.75)}.tier.standby .t-dot{background:var(--t3)}.tier.warn .t-dot{background:#ccc}
+@media(prefers-reduced-motion:no-preference){.tier.warn .t-dot{animation:pdot 1.2s ease-in-out infinite}}
+@keyframes pdot{0%,100%{opacity:1}50%{opacity:.25}}
+.t-inner .t-name{display:block;font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--t2)}
+.t-inner .t-stat{display:block;font-size:9px;letter-spacing:.10em;text-transform:uppercase;color:var(--t3);transition:color .3s}
+.tier.active .t-stat{color:var(--mil-friend)}.tier.active-b .t-stat{color:rgba(255,255,255,.70)}.tier.warn .t-stat{color:#ccc}
+.t-arr{font-family:var(--mono);font-size:10px;color:var(--t3)}
+.hd-right{display:flex;align-items:center;gap:16px}
+.classif{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#ccc;border:1px solid rgba(240,192,64,.30);padding:4px 10px}
+.miss-id{font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:.09em}
+.clock{font-family:var(--mono);font-size:20px;font-weight:700;letter-spacing:.06em;color:var(--t1);min-width:86px;text-align:right}
+
+/* ══ STATS BAR ════════════════════════════════════════════ */
+.stats-bar{position:relative;z-index:10;border-bottom:1px solid var(--bd2);display:grid;grid-template-columns:160px repeat(6,1fr);height:70px;flex-shrink:0;background:var(--bg2)}
+.stat{border-right:1px solid var(--bd);padding:10px 20px;display:flex;flex-direction:column;justify-content:center;gap:2px}
+.stat:last-child{border-right:none}
+.stat-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.20em;text-transform:uppercase;color:var(--t3)}
+.stat-val{font-size:30px;font-weight:900;letter-spacing:-.01em;line-height:1;font-variant-numeric:tabular-nums}
+.stat-val.sm{font-size:14px;font-weight:700;letter-spacing:.03em}
+
+/* ══ MAIN LAYOUT ══════════════════════════════════════════ */
+.main{position:relative;z-index:10;display:flex;flex:1;overflow:hidden;min-height:0}
+
+/* ══ COLLAPSIBLE PANELS ═══════════════════════════════════ */
+.side-panel{display:flex;flex-direction:column;overflow:hidden;transition:width .22s ease,min-width .22s ease,border-width .22s ease;flex-shrink:0;position:relative;z-index:5}
+.left-panel{width:var(--panel-w);min-width:var(--panel-w);border-right:1px solid var(--bd2)}
+.right-panel{width:var(--right-w);min-width:var(--right-w);border-left:1px solid var(--bd2)}
+.left-panel.collapsed{width:30px;min-width:30px}
+.right-panel.collapsed{width:30px;min-width:30px}
+
+/* Panel toggle strip */
+.panel-toggle{position:absolute;top:50%;transform:translateY(-50%);z-index:10;
+  background:var(--bg2);border:1px solid var(--bd2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  width:20px;height:40px;transition:background .12s;color:var(--t3)}
+.panel-toggle:hover{background:var(--bg3);color:var(--t1)}
+.left-panel .panel-toggle{right:-10px;border-left:none}
+.right-panel .panel-toggle{left:-10px;border-right:none}
+.panel-toggle svg{transition:transform .22s}
+.left-panel.collapsed .panel-toggle svg{transform:scaleX(-1)}
+.right-panel.collapsed .panel-toggle svg{transform:scaleX(-1)}
+
+/* Collapsed label (vertical text) */
+.panel-collapsed-label{display:none;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;padding:20px 0;gap:6px}
+.left-panel.collapsed .panel-collapsed-label{display:flex}
+.right-panel.collapsed .panel-collapsed-label{display:flex}
+.pcl-text{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.20em;text-transform:uppercase;
+  color:var(--t3);writing-mode:vertical-rl;text-orientation:mixed}
+
+/* Panel content hides when collapsed */
+.panel-inner{display:flex;flex-direction:column;overflow:hidden;flex:1;min-width:0;transition:opacity .18s}
+.left-panel.collapsed .panel-inner,.right-panel.collapsed .panel-inner{opacity:0;pointer-events:none}
+
+/* ══ SHARED PANEL CHROME ══════════════════════════════════ */
+.panel-tabs{display:flex;align-items:stretch;border-bottom:1px solid var(--bd2);flex-shrink:0;background:var(--bg)}
+.ptab{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  padding:11px 14px;background:transparent;border:none;border-bottom:2px solid transparent;
+  color:var(--t3);cursor:pointer;transition:color .12s,border-color .12s;white-space:nowrap}
+.ptab:hover{color:var(--t2)}
+.ptab.active{color:var(--t1);border-bottom-color:var(--t1)}
+.panel-content{flex:1;overflow-y:auto;position:relative}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* ══ VEHICLE LIST ═════════════════════════════════════════ */
+.sec-hd{padding:9px 16px;border-bottom:1px solid var(--bd);font-family:var(--mono);font-size:9px;
+  font-weight:700;letter-spacing:.20em;text-transform:uppercase;color:var(--t3);
+  background:var(--bg);position:sticky;top:0;z-index:2}
+.vcard{padding:12px 16px;border-bottom:1px solid var(--bd);cursor:pointer;transition:background .12s;
+  display:flex;flex-direction:column;gap:3px;border-left:2px solid transparent}
+.vcard:hover{background:rgba(255,255,255,.018)}
+.vcard.selected{background:rgba(255,255,255,.03);border-left-color:#aaa}
+.vcard.ours.selected{border-left-color:var(--mil-friend)}
+.vcard-top{display:flex;align-items:center;justify-content:space-between}
+.vcard-name{font-size:13px;font-weight:700;letter-spacing:.02em}
+.vcard-meta{font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:.06em}
+.vbadge{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:2px 6px}
+.vbadge.NOMINAL   {color:var(--mil-friend);border:1px solid rgba(128,224,255,.35);background:rgba(128,224,255,.05)}
+.vbadge.TRACKED   {color:var(--t2);border:1px solid var(--bd3);background:rgba(255,255,255,.04)}
+.vbadge.TARGET    {color:var(--t2);border:1px solid var(--t3);background:transparent}
+.vbadge.DEGRADED  {color:#ccc;border:1px solid rgba(255,255,255,.30);background:rgba(255,255,255,.04)}
+.vbadge.SUPPORT   {color:var(--t2);border:1px solid var(--bd3);background:transparent}
+
+/* ══ SOH ══════════════════════════════════════════════════ */
+.soh-header{padding:14px 16px;border-bottom:1px solid var(--bd)}
+.soh-name{font-size:14px;font-weight:700;letter-spacing:.02em}
+.soh-role{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.10em;text-transform:uppercase;margin-top:2px}
+.soh-pct-row{display:flex;align-items:baseline;justify-content:space-between;margin-top:8px}
+.soh-pct{font-size:38px;font-weight:900;line-height:1;letter-spacing:-.02em}
+.soh-pct-lbl{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.12em;text-transform:uppercase}
+.soh-uplink{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.08em;margin-top:4px}
+.mini-bar-row{padding:7px 16px 4px;border-bottom:1px solid rgba(255,255,255,.04)}
+.mini-bar-lbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.07em;margin-bottom:3px}
+.mini-bar{height:2px;background:rgba(255,255,255,.08)}
+.mini-fill{height:100%;transition:width .4s}
+.soh-row{display:flex;align-items:center;justify-content:space-between;padding:6px 16px;border-bottom:1px solid rgba(255,255,255,.04)}
+.soh-sub{font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:.06em}
+.soh-st{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.07em}
+.soh-st.ok{color:var(--mil-friend)}.soh-st.deg{color:#bbb}.soh-st.crit{color:#fff}.soh-st.val{color:var(--t2)}
+
+/* ══ TIMELINE ═════════════════════════════════════════════ */
+.tl-entry{padding:8px 16px;border-bottom:1px solid rgba(255,255,255,.04);display:grid;grid-template-columns:70px 1fr;gap:8px;align-items:start}
+.tl-time{font-family:var(--mono);font-size:10px;color:var(--t3);padding-top:1px;letter-spacing:.04em}
+.tl-dot{display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:5px;vertical-align:middle;position:relative;top:-1px}
+.tl-text{font-size:11px;color:var(--t2);line-height:1.45}
+.tl-text.done{color:var(--mil-friend)}.tl-text.auto{color:#aaa}.tl-text.warn{color:#999}
+.tl-ref{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.06em;margin-top:1px}
+
+/* Phase badge in timeline */
+.phase-marker{padding:6px 16px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:10px}
+.pm-line{flex:1;height:1px;background:rgba(255,255,255,.06)}
+.pm-label{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.20em;text-transform:uppercase;color:var(--t3);white-space:nowrap}
+
+/* ══ CONTACTS TAB ════════════════════════════════════════ */
+.cc-card{padding:12px 16px;border-bottom:1px solid var(--bd)}
+.cc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.cc-name{font-size:12px;font-weight:700;letter-spacing:.02em}
+.cc-badge{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:2px 7px}
+.cc-badge.ACTIVE  {color:var(--mil-friend);border:1px solid rgba(128,224,255,.35);background:rgba(128,224,255,.05)}
+.cc-badge.STANDBY {color:var(--t2);border:1px solid var(--t3);background:transparent}
+.cc-badge.ODC     {color:#ddd;border:1px solid rgba(255,255,255,.30);background:rgba(255,255,255,.06)}
+.cc-row{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.06em;line-height:1.8}
+.cc-row span{color:var(--t2)}
+.cc-sched{margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,.05)}
+.cc-sched-lbl{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px}
+.cc-sched-item{font-family:var(--mono);font-size:10px;color:var(--t2);line-height:1.7}
+
+/* Bottom stats inside Contacts tab */
+.ct-stats-hd{padding:10px 16px 8px;border-bottom:1px solid var(--bd);background:var(--bg);
+  font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.20em;text-transform:uppercase;color:var(--t3)}
+.ct-stats-section{padding:12px 16px;border-bottom:1px solid var(--bd)}
+.ct-sec-title{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--t2);margin-bottom:8px}
+.ct-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.ct-lbl{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.07em;text-transform:uppercase}
+.ct-val{font-family:var(--mono);font-size:10px;color:var(--t2);letter-spacing:.05em}
+.ct-val.ok{color:var(--mil-friend)}.ct-val.warn{color:#ccc}.ct-val.bad{color:#fff}
+.link-bar-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.link-bar{flex:1;height:2px;background:rgba(255,255,255,.08)}
+.link-fill{height:100%;background:var(--mil-friend);transition:width .5s}
+.bo-box{padding:6px 10px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.03);margin-top:6px;transition:all .3s}
+.bo-box.active{border-color:rgba(255,255,255,.40);background:rgba(255,255,255,.06)}
+.bo-title{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--t2);margin-bottom:2px;transition:color .3s}
+.bo-box.active .bo-title{color:#fff}
+.bo-timer-val{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--t1);letter-spacing:.04em}
+.bo-sub{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.08em;margin-top:2px}
+.abort-box{padding:5px 8px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.03);margin-top:6px}
+.abort-title{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#fff;margin-bottom:3px}
+.abort-item{font-family:var(--mono);font-size:9px;color:var(--t3);line-height:1.6}
+.abort-item span{color:#fff}
+.wl-split{display:flex;gap:16px;margin-bottom:7px}
+.wl-num{font-size:28px;font-weight:900;line-height:1}
+.wl-num.auto{color:#aaa}.wl-num.op{color:var(--t2)}
+.wl-num-lbl{font-family:var(--mono);font-size:8px;color:var(--t3);letter-spacing:.10em;text-transform:uppercase;margin-top:1px}
+.wl-bar-lbl{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between;margin-bottom:3px}
+.wl-bar{height:2px;background:rgba(255,255,255,.08);margin-bottom:5px}
+.wl-fill{height:100%;background:var(--mil-friend)}
+.wl-cat{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--t3);line-height:1.8}
+.wl-cat span{color:var(--t2)}
+
+/* ══ CENTER — TRAJECTORY HERO ════════════════════════════ */
+.center-view{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;min-height:0;position:relative;z-index:1}
+.traj-topbar{padding:8px 16px;border-bottom:1px solid var(--bd);background:var(--bg2);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:8px;height:44px;overflow:hidden}
+.traj-title-grp{display:flex;align-items:center;gap:12px}
+h2.traj-title{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--t3)}
+.traj-phase{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;padding:3px 9px;border:1px solid;color:var(--mil-friend);border-color:rgba(128,224,255,.35);background:rgba(128,224,255,.05)}
+.traj-stats-row{display:flex;gap:14px;flex-wrap:nowrap;overflow:hidden}
+.tstat{font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:.07em}
+.tstat strong{color:var(--t1);font-weight:700}
+.corr-badge{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;padding:3px 9px;border:1px solid;transition:all .3s}
+.corr-badge.in{color:var(--mil-friend);border-color:rgba(128,224,255,.35);background:rgba(128,224,255,.05)}
+.corr-badge.warn{color:var(--mil-unknown);border-color:rgba(255,255,0,.45);background:rgba(255,255,0,.05)}
+.traj-canvas{flex:1;position:relative;overflow:hidden;min-height:240px;background:#080808;display:flex;flex-direction:column}
+#traj-svg{width:100%;flex:1;display:block}
+.bo-overlay{display:none;position:absolute;inset:0;background:rgba(224,92,92,.04);border:1px solid rgba(224,92,92,.18);pointer-events:none;z-index:5;align-items:center;justify-content:center;flex-direction:column;gap:8px}
+.bo-overlay.show{display:flex}
+.bo-lbl{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#fff}
+.bo-sublbl{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.10em;text-transform:uppercase}
+
+/* ══ RIGHT PANEL / QUEUE ══════════════════════════════════ */
+.next-action{padding:14px 18px;border-bottom:1px solid var(--bd2);background:var(--bg2);flex-shrink:0}
+.na-hd{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.20em;text-transform:uppercase;color:var(--t3);margin-bottom:7px}
+.na-title{font-size:13px;font-weight:700;line-height:1.3;color:var(--t1);margin-bottom:9px}
+.na-title.rb{color:var(--mil-hostile)}
+.na-row{display:flex;align-items:center;gap:10px}
+.na-cd{font-family:var(--mono);font-size:24px;font-weight:900;color:var(--t1);letter-spacing:.04em}
+.na-div{width:1px;height:32px;background:var(--bd2)}
+.na-status-lbl{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:3px}
+.na-status-dot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle;position:relative;top:-1px}
+.na-status-txt{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+/* AQ cards */
+.aq-list{overflow-y:auto;flex:1}
+.aq-card{border-bottom:1px solid var(--bd);padding:14px 18px;position:relative;transition:opacity .4s,transform .4s;border-left:2px solid transparent}
+.aq-card.resolving{opacity:0;transform:translateX(18px);pointer-events:none}
+.aq-card.aq-crit{border-left-color:var(--mil-hostile)}
+.aq-card.aq-elev{border-left-color:#999}
+.aq-card.aq-nom{border-left-color:var(--mil-friend)}
+.aq-card.attn::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--mil-friend)}
+@media(prefers-reduced-motion:no-preference){
+  .aq-card.attn::before{animation:rbflow 3s ease infinite}
+  /* na-title.rb no animation */
+  .live-dot{animation:blink 1.4s ease-in-out infinite}
+}
+@keyframes rbflow{0%,100%{background-position:0% 0%}50%{background-position:0% 100%}}
+/* rbtxt animation removed — lime accent used instead */
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.aq-top{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.aq-badge{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;padding:2px 6px}
+.aq-badge.CRITICAL  {color:var(--mil-hostile);border:1px solid rgba(255,128,128,.50);background:rgba(255,128,128,.08)}
+.aq-badge.ELEVATED  {color:var(--mil-unknown);border:1px solid rgba(255,255,0,.40);background:rgba(255,255,0,.06)}
+.aq-badge.NOMINAL   {color:var(--mil-friend);border:1px solid rgba(128,224,255,.40);background:rgba(128,224,255,.06)}
+.aq-badge.INFO      {color:var(--t2);border:1px solid var(--bd3);background:transparent}
+.aq-timer{font-family:var(--mono);font-size:10px;color:var(--t3);margin-left:auto;letter-spacing:.06em}
+.aq-title{font-size:13px;font-weight:700;letter-spacing:-.01em;line-height:1.3;color:var(--t1);margin-bottom:7px}
+.aq-title.rb{color:var(--mil-hostile)}
+.aq-sec{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.20em;text-transform:uppercase;color:var(--t3);margin:7px 0 3px}
+.aq-propose{font-size:11px;color:var(--t2);line-height:1.55}
+.aq-consequence{font-size:11px;line-height:1.55}
+.aq-consequence.warn{color:#999}.aq-consequence.ok{color:var(--t2)}
+.aq-conf{display:flex;align-items:center;gap:7px;margin:8px 0 7px}
+.aq-conf-lbl{font-family:var(--mono);font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.09em;white-space:nowrap}
+.conf-bar{flex:1;height:2px;background:rgba(255,255,255,.08)}
+.conf-fill{height:100%}
+.conf-pct{font-family:var(--mono);font-size:10px;font-weight:700;min-width:30px;text-align:right}
+.aq-actions{display:flex;gap:5px;flex-wrap:wrap}
+.aq-btn{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  padding:6px 12px;min-height:30px;cursor:pointer;background:transparent;
+  border:1px solid var(--bd-ui);color:var(--t3);transition:all .12s}
+.aq-btn:hover{border-color:var(--bd-ui2);color:var(--t1);background:rgba(255,255,255,.05)}
+.aq-btn.primary{border-color:rgba(128,224,255,.50);color:var(--mil-friend)}
+.aq-btn.primary:hover{background:rgba(128,224,255,.08)}
+.res-banner{display:none;position:absolute;inset:0;background:rgba(4,4,4,.92);align-items:center;justify-content:center;z-index:2}
+.res-banner.show{display:flex}
+.res-txt{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase}
+.res-txt.ok{color:var(--mil-friend)}.res-txt.no{color:var(--mil-hostile)}
+
+/* ══ FOOTER ═══════════════════════════════════════════════ */
+footer{position:relative;z-index:10;border-top:1px solid var(--bd2);height:36px;padding:0 22px;
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--bg2)}
+.ft-grp{display:flex;align-items:center;gap:18px}
+.ft-item{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3)}
+.ft-item span{color:var(--t2)}
+
+
+/* ══ WORKSPACE WRAPPER ════════════════════════════════════════════════════════ */
+.workspace{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+
+/* ══ TIMELINE PANEL — Adobe Premiere style ════════════════════════════════════ */
+.tl-panel{
+  height:175px;flex-shrink:0;
+  border-top:1px solid rgba(255,255,255,.18);
+  background:#0d0d0d;
+  display:flex;flex-direction:column;
+  position:relative;z-index:10;
+  overflow:hidden;
+  user-select:none;
+}
+
+/* ── Controls bar ── */
+.tl-controls-bar{
+  height:30px;flex-shrink:0;
+  background:#080808;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;
+  padding:0 10px;gap:8px;
+}
+.tl-time-display{
+  font-family:var(--mono);font-size:13px;font-weight:700;
+  color:var(--lime);letter-spacing:.06em;
+  min-width:96px;
+}
+.tl-transport{display:flex;align-items:center;gap:2px}
+.tl-btn{
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  background:transparent;border:1px solid rgba(255,255,255,.14);
+  color:var(--t2);cursor:pointer;
+  padding:0 7px;height:22px;
+  transition:background .1s,color .1s;
+  letter-spacing:.04em;
+}
+.tl-btn:hover{background:rgba(255,255,255,.08);color:#fff}
+.tl-btn.active{background:var(--lime);color:#000;border-color:var(--lime)}
+.tl-sep{width:1px;height:16px;background:rgba(255,255,255,.10);margin:0 4px}
+.tl-speed-group,.tl-zoom-group{display:flex;align-items:center;gap:0}
+.tl-speed-btn,.tl-zoom-btn{
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  background:transparent;border:1px solid rgba(255,255,255,.14);
+  color:var(--t3);cursor:pointer;padding:0 7px;height:22px;
+  transition:background .1s,color .1s;letter-spacing:.06em;
+}
+.tl-speed-btn:hover,.tl-zoom-btn:hover{color:var(--t2)}
+.tl-speed-btn.active{background:rgba(185,255,0,.15);color:var(--lime);border-color:rgba(185,255,0,.4)}
+.tl-speed-btn+.tl-speed-btn,.tl-zoom-btn+.tl-zoom-btn{border-left:none}
+.tl-zoom-lbl{
+  font-family:var(--mono);font-size:9px;color:var(--t3);
+  padding:0 6px;height:22px;line-height:22px;
+  border-top:1px solid rgba(255,255,255,.14);border-bottom:1px solid rgba(255,255,255,.14);
+}
+.tl-phase-lbl{
+  font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--t3);margin-left:auto;
+}
+.tl-phase-val{
+  font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:#fff;margin-right:4px;
+}
+
+/* ── Timeline body: header col + scrollable area ── */
+.tl-body{display:flex;flex:1;overflow:hidden}
+
+/* Track header column */
+.tl-header-col{
+  width:100px;flex-shrink:0;
+  background:#090909;
+  border-right:1px solid rgba(255,255,255,.10);
+  display:flex;flex-direction:column;
+}
+.tl-ruler-corner{
+  height:20px;flex-shrink:0;
+  background:#060606;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.tl-header{
+  flex:1;display:flex;align-items:center;padding:0 10px;
+  border-bottom:1px solid rgba(255,255,255,.04);
+  font-family:var(--mono);font-size:8px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--t3);
+}
+.tl-header:last-child{border-bottom:none}
+
+/* Scrollable area */
+.tl-scroll-area{
+  flex:1;overflow-x:auto;overflow-y:hidden;
+  position:relative;
+}
+.tl-scroll-area::-webkit-scrollbar{height:3px}
+.tl-scroll-area::-webkit-scrollbar-track{background:#080808}
+.tl-scroll-area::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15)}
+
+/* Inner content (width set by JS) */
+.tl-inner{
+  position:relative;height:100%;
+  min-width:100%;
+}
+
+/* Ruler */
+.tl-ruler{
+  height:20px;flex-shrink:0;
+  background:#060606;
+  border-bottom:1px solid rgba(255,255,255,.10);
+  position:relative;overflow:hidden;cursor:pointer;
+}
+.tl-ruler-tick{
+  position:absolute;bottom:0;
+  width:1px;background:rgba(255,255,255,.20);
+}
+.tl-ruler-tick.major{background:rgba(255,255,255,.35);height:100%}
+.tl-ruler-lbl{
+  position:absolute;top:3px;
+  font-family:var(--mono);font-size:8px;color:rgba(255,255,255,.35);
+  letter-spacing:.04em;transform:translateX(-50%);pointer-events:none;
+}
+
+/* Track rows */
+.tl-track{
+  height:22px;position:relative;
+  border-bottom:1px solid rgba(255,255,255,.04);
+  cursor:pointer;overflow:visible;
+}
+.tl-track:last-child{border-bottom:none}
+.tl-track:hover{background:rgba(255,255,255,.012)}
+
+/* Clips (event blocks) */
+.tl-clip{
+  position:absolute;top:2px;bottom:2px;
+  display:flex;align-items:center;
+  padding:0 6px;overflow:hidden;
+  border-left:1px solid rgba(255,255,255,.15);
+  cursor:pointer;transition:filter .1s;
+  box-sizing:border-box;
+}
+.tl-clip:hover{filter:brightness(1.25)}
+.tl-clip-label{
+  font-family:var(--mono);font-size:8px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+/* Phase clips */
+.clip-phase-launch  {background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.10)}
+.clip-phase-launch  .tl-clip-label{color:#555}
+.clip-phase-oi      {background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12)}
+.clip-phase-oi      .tl-clip-label{color:#666}
+.clip-phase-phasing {background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.12)}
+.clip-phase-phasing .tl-clip-label{color:#777}
+.clip-phase-ff      {background:rgba(255,255,255,.10);border-color:rgba(255,255,255,.15)}
+.clip-phase-ff      .tl-clip-label{color:#888}
+.clip-phase-nf      {background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.18)}
+.clip-phase-nf      .tl-clip-label{color:#999}
+.clip-phase-ta      {background:rgba(185,255,0,.10); border-color:rgba(185,255,0,.30)}
+.clip-phase-ta      .tl-clip-label{color:var(--lime)}
+.clip-phase-fa      {background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.12)}
+.clip-phase-fa      .tl-clip-label{color:#666}
+.clip-phase-dock    {background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.10)}
+.clip-phase-dock    .tl-clip-label{color:#555}
+
+/* Burn clips */
+.clip-burn-done {background:rgba(185,255,0,.18);border-color:rgba(185,255,0,.50)}
+.clip-burn-done .tl-clip-label{color:var(--lime)}
+.clip-burn-up   {background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.25)}
+.clip-burn-up   .tl-clip-label{color:#bbb}
+
+/* Contact clips */
+.clip-contact-ground {background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.20)}
+.clip-contact-ground .tl-clip-label{color:#aaa}
+.clip-contact-relay  {background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14)}
+.clip-contact-relay  .tl-clip-label{color:#777}
+
+/* Comms clips */
+.clip-comms-good    {background:rgba(185,255,0,.06); border-color:rgba(185,255,0,.18)}
+.clip-comms-good    .tl-clip-label{color:rgba(185,255,0,.6)}
+.clip-comms-blackout{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.20)}
+.clip-comms-blackout .tl-clip-label{color:#888}
+
+/* ODC event clips (thin markers) */
+.clip-odc{
+  top:5px;bottom:5px;width:3px;padding:0;
+  background:rgba(255,255,255,.40);border:none;
+}
+.clip-odc:hover{filter:brightness(2);z-index:2}
+
+/* Playhead */
+.tl-playhead{
+  position:absolute;top:0;bottom:0;width:1px;
+  background:#fff;pointer-events:none;z-index:20;
+}
+.tl-playhead-handle{
+  position:absolute;top:0;left:-5px;width:11px;height:11px;
+  background:#fff;clip-path:polygon(50% 100%, 0 0, 100% 0);
+  cursor:ew-resize;pointer-events:all;
+}
+
+/* NOW marker (live time, always advances) */
+.tl-now-line{
+  position:absolute;top:0;bottom:0;width:1px;
+  background:rgba(185,255,0,.35);pointer-events:none;z-index:15;
+}
+.tl-now-pip{
+  position:absolute;top:0;left:-3px;width:7px;height:7px;
+  background:var(--lime);border-radius:50%;
+}
+
+/* Tooltip on hover */
+.tl-tooltip{
+  position:fixed;z-index:100;
+  background:#1a1a1a;border:1px solid rgba(255,255,255,.20);
+  padding:4px 9px;pointer-events:none;
+  font-family:var(--mono);font-size:9px;color:#fff;
+  letter-spacing:.07em;text-transform:uppercase;
+  white-space:nowrap;display:none;
+}
+
+/* ══ TIMELINE COLLAPSE ════════════════════════════════════════════════════════ */
+.tl-panel{transition:height .22s ease}
+.tl-panel.collapsed{height:0!important;overflow:hidden}
+
+/* Timeline collapse toggle — sits on the top-left edge of the panel */
+.tl-toggle{
+  position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+  z-index:20;background:var(--bg2);
+  border:1px solid rgba(255,255,255,.18);border-bottom:none;
+  cursor:pointer;color:var(--t3);
+  display:flex;align-items:center;gap:5px;
+  padding:2px 12px 2px 10px;
+  transition:background .12s,color .12s;
+}
+.tl-toggle:hover{background:var(--bg3);color:var(--t1)}
+.tl-toggle-icon{transition:transform .22s}
+.tl-panel.collapsed .tl-toggle-icon{transform:scaleY(-1)}
+.tl-toggle-lbl{
+  font-family:var(--mono);font-size:8px;font-weight:700;
+  letter-spacing:.18em;text-transform:uppercase;
+}
+
+/* ══ FULL-SCREEN CHIP ══════════════════════════════════════════════════════════ */
+/* A small pill in the trajectory top bar to toggle all-collapsed full-screen */
+.fs-btn{
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  letter-spacing:.16em;text-transform:uppercase;
+  background:transparent;border:1px solid rgba(255,255,255,.22);
+  color:var(--t3);cursor:pointer;
+  padding:3px 10px;height:26px;
+  transition:background .12s,color .12s,border-color .12s;
+  display:flex;align-items:center;gap:5px;
+}
+.fs-btn:hover{background:rgba(255,255,255,.06);color:var(--t1);border-color:var(--bd3)}
+.fs-btn.active{
+  background:rgba(185,255,0,.10);
+  border-color:rgba(185,255,0,.40);
+  color:var(--lime);
+}
+
+/* When in "visualizer-full" mode, make center-view fill completely */
+.workspace.viz-full .tl-panel{height:0!important;overflow:hidden}
+.workspace.viz-full .left-panel{width:0!important;min-width:0!important;border-right:none;overflow:hidden}
+.workspace.viz-full .right-panel{width:0!important;min-width:0!important;border-left:none;overflow:hidden}
+.workspace.viz-full .left-panel .panel-toggle,
+.workspace.viz-full .right-panel .panel-toggle,
+.workspace.viz-full .tl-toggle{opacity:0;pointer-events:none}
+
+/* When panels are individually collapsed, hide their toggle buttons from the border */
+.left-panel.collapsed .panel-inner,
+.right-panel.collapsed .panel-inner{display:none}
+
+/* Collapsed strip shows vertical label + icon */
+.left-panel.collapsed,
+.right-panel.collapsed{
+  cursor:pointer;
+}
+
+/* In full viz mode, topbar sits at top, slim + semi-transparent */
+.workspace.viz-full .traj-topbar{
+  background:rgba(4,4,4,.80);
+  border-bottom-color:rgba(255,255,255,.08);
+}
+.workspace.viz-full .traj-canvas{
+  /* SVG fills all remaining space; flex handles it */
+}
+
+/* Panel collapse strip — persistent narrow strip showing icon + label when collapsed */
+.panel-collapsed-strip{
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;width:30px;gap:8px;cursor:pointer;
+  border:none;background:transparent;padding:0;
+}
+.left-panel.collapsed .panel-collapsed-strip{display:flex}
+.right-panel.collapsed .panel-collapsed-strip{display:flex}
+.pcs-label{
+  font-family:var(--mono);font-size:7px;font-weight:700;letter-spacing:.20em;
+  text-transform:uppercase;color:var(--t3);
+  writing-mode:vertical-rl;text-orientation:mixed;
+}
+.pcs-icon{color:var(--t3);font-size:10px}
+
+/* Contact window countdown cards */
+.ct-cw-card{padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.ct-cw-card:last-child{border-bottom:none}
+.ct-cw-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.ct-cw-name{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--t1);letter-spacing:.04em}
+.ct-cw-timer{font-family:var(--mono);font-size:13px;font-weight:900;color:var(--lime);letter-spacing:.05em}
+.ct-cw-meta{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.07em}
+
+/* Burn template buttons in right-click menu */
+.ctx-tpl-btn{
+  display:flex;align-items:center;justify-content:space-between;
+  width:100%;background:transparent;border:none;
+  padding:7px 12px;cursor:pointer;
+  transition:background .1s;text-align:left;
+  border-bottom:1px solid rgba(255,255,255,.04);
+}
+.ctx-tpl-btn:hover{background:rgba(255,255,255,.06)}
+.ctx-tpl-btn:last-child{border-bottom:none}
+.ctx-tpl-name{font-family:var(--mono);font-size:10px;font-weight:700;color:#fff;letter-spacing:.05em}
+.ctx-tpl-meta{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.05em}
+
+/* Queue filter chips */
+.qf-chip{
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;
+  padding:4px 10px;min-height:26px;
+  border:1px solid var(--bd-ui);
+  background:transparent;color:var(--t3);
+  cursor:pointer;transition:background .12s,color .12s,border-color .12s;
+}
+.qf-chip:hover{border-color:var(--bd-ui2);color:var(--t2)}
+.qf-chip.qf-active{background:#fff;color:#000;border-color:#fff}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.10)}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.20)}
+
+/* ══ VIEW RIBBON ══════════════════════════════════════════════ */
+.view-ribbon{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 18px;border-bottom:1px solid var(--bd);
+  background:var(--bg2);flex-shrink:0;gap:12px;
+}
+.vr-left{display:flex;align-items:center;gap:3px}
+.vr-btn{
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  letter-spacing:.18em;text-transform:uppercase;
+  padding:4px 14px;min-height:26px;
+  background:transparent;color:var(--t3);
+  border:1px solid var(--bd-ui);cursor:pointer;
+  transition:background .12s,color .12s;
+}
+.vr-btn:first-child{border-right:none}
+.vr-btn:hover{background:rgba(255,255,255,.05);color:var(--t2)}
+.vr-btn.active{background:#fff;color:#000;border-color:#fff}
+.vr-right{font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.10em;text-transform:uppercase}
+
+/* ══ FILTER BAR ═══════════════════════════════════════════════ */
+.viz-filter-bar{
+  display:flex;align-items:center;flex-shrink:0;
+  border-top:1px solid var(--bd);background:var(--bg2);
+  padding:4px 14px;gap:5px;height:30px;overflow:hidden;
+}
+.vfb-label{
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  letter-spacing:.20em;text-transform:uppercase;
+  color:var(--t3);white-space:nowrap;margin-right:6px;
+}
+.vfb-sep{width:1px;height:16px;background:var(--bd2);margin:0 4px}
+.vfb-toggle{
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  letter-spacing:.13em;text-transform:uppercase;
+  padding:3px 10px;min-height:24px;cursor:pointer;
+  background:transparent;border:1px solid var(--bd-ui);color:var(--t3);
+  display:flex;align-items:center;gap:6px;
+  transition:background .12s,color .12s,border-color .12s;
+}
+.vfb-toggle:hover{border-color:var(--bd3);color:var(--t2)}
+.vfb-toggle.on{border-color:var(--t1);color:var(--t1);background:rgba(255,255,255,.06)}
+.vfb-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* Profile SVG container */
+.profile-wrap{
+  flex:1;display:none;overflow:hidden;
+  align-items:center;justify-content:center;
+}
+.profile-wrap.active{display:flex}
+#traj-svg.hidden{display:none}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<!-- HEADER -->
+<header role="banner">
+  <div class="hd-left">
+    <h1 class="logo-name">APEX</h1>
+    <div class="logo-sub">Orbital Data Center Command<br>SPACE FORCE // 18 SQ</div>
+    <div class="vdiv"></div>
+    <div class="tier-stack" role="region" aria-label="Control tier status" aria-live="polite">
+      <div class="tier active" id="t-ground"><div class="t-dot" aria-hidden="true"></div>
+        <div class="t-inner"><span class="t-name">Ground Policy</span><span class="t-stat" id="ts-ground">Active</span></div></div>
+      <div class="t-arr" aria-hidden="true">&#8594;</div>
+      <div class="tier active-b" id="t-odc"><div class="t-dot" aria-hidden="true"></div>
+        <div class="t-inner"><span class="t-name">ODC Execution</span><span class="t-stat" id="ts-odc">Active</span></div></div>
+      <div class="t-arr" aria-hidden="true">&#8594;</div>
+      <div class="tier standby" id="t-vehicle"><div class="t-dot" aria-hidden="true"></div>
+        <div class="t-inner"><span class="t-name">Vehicle Autonomy</span><span class="t-stat" id="ts-vehicle">Standby</span></div></div>
+    </div>
+  </div>
+  <div class="hd-right">
+    <div class="classif" role="note">UNCLASSIFIED // FOR OFFICIAL USE ONLY</div>
+    <div class="miss-id">OP IRONVAULT &#8212; T+04:22:17</div>
+    <div class="clock" id="clock" aria-live="off">--:--:--Z</div>
+  </div>
+</header>
+
+<!-- STATS BAR -->
+<div class="stats-bar" role="region" aria-label="Mission status" aria-live="polite" aria-atomic="false">
+  <div class="stat" style="border-right:1px solid var(--bd2);padding:8px 14px;justify-content:flex-start;gap:2px">
+    <div class="stat-lbl" id="sv-lbl">PRIMARY</div>
+    <div style="font-size:17px;font-weight:900;letter-spacing:.03em;color:var(--lime);line-height:1.1" id="sv-name">RAVEN-7</div>
+    <div style="font-family:var(--mono);font-size:8px;color:var(--t3);letter-spacing:.09em;text-transform:uppercase" id="sv-role">Orbital Servicer</div>
+  </div>
+  <div class="stat"><div class="stat-lbl">Range to Target</div><div class="stat-val" style="color:var(--t1)" id="s-range">847m</div></div>
+  <div class="stat"><div class="stat-lbl">Approach Rate</div><div class="stat-val" style="color:#aaa" id="s-rate">0.45 m/s</div></div>
+  <div class="stat"><div class="stat-lbl">Mission Phase</div><div class="stat-val sm" id="s-phase">TERMINAL APPR.</div></div>
+  <div class="stat"><div class="stat-lbl">ODC Decisions</div><div class="stat-val" style="color:var(--mil-friend)" id="s-odc">47</div></div>
+  <div class="stat"><div class="stat-lbl">Next Blackout</div><div class="stat-val sm" style="color:#ccc" id="s-bo">T&#8722;02:47</div></div>
+  <div class="stat"><div class="stat-lbl">Mission Elapsed</div><div class="stat-val sm" style="color:var(--t3)" id="s-met">T+04:22:17</div></div>
+</div>
+
+<div class="workspace">
+<!-- MAIN -->
+<div class="main" id="main-content" role="main" style="flex:1;min-height:0">
+
+<!-- LEFT PANEL -->
+<div class="side-panel left-panel" id="left-panel" role="region" aria-label="Mission data">
+  <button class="panel-toggle" id="lp-toggle" onclick="togglePanel('left')" aria-label="Toggle left panel" aria-expanded="true">
+    <svg width="8" height="12" viewBox="0 0 8 12" fill="none"><path d="M6 1L2 6L6 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+  </button>
+  <button class="panel-collapsed-strip" onclick="togglePanel('left')"
+        aria-label="Expand mission data panel" tabindex="0">
+  <span class="pcs-icon">&#9654;</span>
+  <span class="pcs-label">Mission Data</span>
+</button>
+  <div class="panel-inner">
+    <div class="panel-tabs" role="tablist" aria-label="Mission data tabs">
+      <button class="ptab active" role="tab" aria-selected="true"  aria-controls="lp-vehicles" id="lt-v" onclick="setLTab('vehicles',this)">Vehicles</button>
+      <button class="ptab"        role="tab" aria-selected="false" aria-controls="lp-soh"      id="lt-s" onclick="setLTab('soh',this)">SOH</button>
+      <button class="ptab"        role="tab" aria-selected="false" aria-controls="lp-tl"       id="lt-t" onclick="setLTab('tl',this)">History</button>
+      <button class="ptab"        role="tab" aria-selected="false" aria-controls="lp-contacts" id="lt-c" onclick="setLTab('contacts',this)">Contacts</button>
+    </div>
+    <div class="panel-content">
+
+      <!-- VEHICLES TAB -->
+      <div class="tab-pane active" id="lp-vehicles" role="tabpanel" aria-labelledby="lt-v">
+        <div class="sec-hd">Primary Vehicle</div>
+
+        <div class="vcard ours selected" id="vc-raven7" role="button" tabindex="0"
+             aria-label="RAVEN-7, Orbital Servicer, Nominal"
+             onclick="selVehicle('RAVEN-7','Orbital Servicer','PRIMARY',this)"
+             onkeydown="if(event.key==='Enter'){selVehicle('RAVEN-7','Orbital Servicer','PRIMARY',this)}">
+          <div class="vcard-top"><span class="vcard-name">RAVEN-7</span><span class="vbadge NOMINAL">ACTIVE</span></div>
+          <div class="vcard-meta">LEO 412km &middot; Orbital Servicer &middot; USSF</div>
+          <div class="vcard-meta" style="margin-top:2px">SOH <strong style="color:var(--lime)">97%</strong> &nbsp;&middot;&nbsp; Fuel <strong style="color:var(--t2)">76%</strong> &nbsp;&middot;&nbsp; T&minus;00:47</div>
+        </div>
+
+        <div class="sec-hd">Support Fleet</div>
+
+        <div class="vcard" id="vc-atlas4" role="button" tabindex="0"
+             aria-label="ATLAS-4, Comms Relay, Nominal"
+             onclick="selVehicle('ATLAS-4','Comms Relay','SUPPORT',this)"
+             onkeydown="if(event.key==='Enter'){selVehicle('ATLAS-4','Comms Relay','SUPPORT',this)}">
+          <div class="vcard-top"><span class="vcard-name">ATLAS-4</span><span class="vbadge SUPPORT">RELAY</span></div>
+          <div class="vcard-meta">LEO 440km &middot; Comms Relay &middot; USSF</div>
+          <div class="vcard-meta" style="margin-top:2px">SOH <strong style="color:var(--lime)">99%</strong> &nbsp;&middot;&nbsp; Crosslink <strong style="color:var(--lime)">Active</strong></div>
+        </div>
+
+        <div class="vcard" id="vc-atlas5" role="button" tabindex="0"
+             aria-label="ATLAS-5, Comms Relay, Standby"
+             onclick="selVehicle('ATLAS-5','Comms Relay','SUPPORT',this)"
+             onkeydown="if(event.key==='Enter'){selVehicle('ATLAS-5','Comms Relay','SUPPORT',this)}">
+          <div class="vcard-top"><span class="vcard-name">ATLAS-5</span><span class="vbadge SUPPORT">STANDBY</span></div>
+          <div class="vcard-meta">LEO 448km &middot; Comms Relay &middot; USSF</div>
+          <div class="vcard-meta" style="margin-top:2px">SOH <strong style="color:var(--lime)">98%</strong> &nbsp;&middot;&nbsp; Crosslink <strong style="color:var(--t3)">Inactive</strong></div>
+        </div>
+
+        <div class="vcard" id="vc-usa342" role="button" tabindex="0"
+             aria-label="USA-342, ISR, Nominal"
+             onclick="selVehicle('USA-342','ISR &middot; EO/IR',  'USSF/NRO',this)"
+             onkeydown="if(event.key==='Enter'){selVehicle('USA-342','ISR &middot; EO/IR','USSF/NRO',this)}">
+          <div class="vcard-top"><span class="vcard-name">USA-342</span><span class="vbadge NOMINAL">NOMINAL</span></div>
+          <div class="vcard-meta">LEO 518km &middot; ISR EO/IR &middot; USSF / NRO</div>
+          <div class="vcard-meta" style="margin-top:2px">SOH <strong style="color:var(--lime)">98%</strong> &nbsp;&middot;&nbsp; Fuel <strong style="color:var(--t2)">74%</strong> &nbsp;&middot;&nbsp; T&minus;00:18</div>
+        </div>
+
+        <div class="vcard" id="vc-usa289" role="button" tabindex="0"
+             aria-label="USA-289, SIGINT, Nominal"
+             onclick="selVehicle('USA-289','SIGINT','USSF/NSA',this)"
+             onkeydown="if(event.key==='Enter'){selVehicle('USA-289','SIGINT','USSF/NSA',this)}">
+          <div class="vcard-top"><span class="vcard-name">USA-289</span><span class="vbadge NOMINAL">NOMINAL</span></div>
+          <div class="vcard-meta">LEO 503km &middot; SIGINT &middot; USSF / NSA</div>
+          <div class="vcard-meta" style="margin-top:2px">SOH <strong style="color:var(--lime)">94%</strong> &nbsp;&middot;&nbsp; Fuel <strong style="color:var(--t2)">61%</strong> &nbsp;&middot;&nbsp; T&minus;00:43</div>
+        </div>
+
+        <div class="vcard" id="vc-geodss4" role="button" tabindex="0"
+             aria-label="GEODSS Node 4, Ground Sensor, Active"
+             onclick="selVehicle('GEODSS-4','Ground Sensor','AFSPC',this)"
+             onkeydown="if(event.key==='Enter'){selVehicle('GEODSS-4','Ground Sensor','AFSPC',this)}">
+          <div class="vcard-top"><span class="vcard-name">GEODSS NODE 4</span><span class="vbadge NOMINAL">ACTIVE</span></div>
+          <div class="vcard-meta">Maui, HI &middot; Ground Sensor &middot; AFSPC</div>
+          <div class="vcard-meta" style="margin-top:2px">Tracking <strong style="color:var(--t2)">2 objects</strong> &nbsp;&middot;&nbsp; TLE 04:18Z</div>
+        </div>
+
+        <div class="sec-hd">Target</div>
+        <div class="vcard" id="vc-osc" role="button" tabindex="0"
+             aria-label="OSC-DEMO, Passive Target, Tracked"
+             onclick="selVehicle('OSC-DEMO','Passive Target','TARGET',this)"
+             onkeydown="if(event.key==='Enter'){selVehicle('OSC-DEMO','Passive Target','TARGET',this)}">
+          <div class="vcard-top"><span class="vcard-name">OSC-DEMO</span><span class="vbadge TRACKED">TRACKED</span></div>
+          <div class="vcard-meta">LEO 412km &middot; Passive Target &middot; Demo</div>
+          <div class="vcard-meta" style="margin-top:2px">Range <strong style="color:var(--t1)" id="vc-range">847m</strong> &nbsp;&middot;&nbsp; Closing <strong style="color:var(--t2)">0.45 m/s</strong></div>
+        </div>
+
+        <div class="sec-hd">Tracked Objects</div>
+        <div class="vcard" id="vc-norad48821" role="button" tabindex="0"
+             aria-label="NORAD-48821, Inspector class, PRC/CNSA"
+             onclick="selVehicle('NORAD-48821','Inspector Class','PRC/CNSA',this)"
+             onkeydown="if(event.key==='Enter'){selVehicle('NORAD-48821','Inspector Class','PRC/CNSA',this)}">
+          <div class="vcard-top"><span class="vcard-name">NORAD-48821</span><span class="vbadge DEGRADED">TRACKED</span></div>
+          <div class="vcard-meta">LEO 520km &middot; Inspector Class &middot; PRC / CNSA</div>
+          <div class="vcard-meta" style="margin-top:2px">Range USA-342 <strong style="color:var(--t2)">47km</strong> &nbsp;&middot;&nbsp; DEV <strong style="color:#fff">9/10</strong></div>
+        </div>
+
+        <div class="vcard" id="vc-cosmos2558" role="button" tabindex="0"
+             aria-label="Cosmos-2558, Inspector class, RU/VKS"
+             onclick="selVehicle('COSMOS-2558','Inspector Class','RU/VKS',this)"
+             onkeydown="if(event.key==='Enter'){selVehicle('COSMOS-2558','Inspector Class','RU/VKS',this)}">
+          <div class="vcard-top"><span class="vcard-name">COSMOS-2558</span><span class="vbadge DEGRADED">MONITOR</span></div>
+          <div class="vcard-meta">LEO 541km &middot; Inspector Class &middot; Russia / VKS</div>
+          <div class="vcard-meta" style="margin-top:2px">DEV score <strong style="color:#ccc">5/10</strong> &nbsp;&middot;&nbsp; No burns detected</div>
+        </div>
+      </div>
+      <!-- SOH TAB -->
+      <div class="tab-pane" id="lp-soh" role="tabpanel" aria-labelledby="lt-s">
+        <div id="soh-RAVEN-7">
+          <div class="soh-header">
+            <div class="soh-name">RAVEN-7</div>
+            <div class="soh-role">ORBITAL SERVICER &#183; LEO 412km &#183; USSF</div>
+            <div class="soh-pct-row">
+              <div><div class="soh-pct" style="color:var(--mil-friend)">97%</div><div class="soh-pct-lbl">OVERALL SOH</div></div>
+            </div>
+            <div class="soh-uplink">Last uplink: <span style="color:var(--t2)">04:17:02Z &#183; 1 min ago &#183; 100% valid</span></div>
+          </div>
+          <div class="mini-bar-row"><div class="mini-bar-lbl"><span>Fuel Reserve</span><span style="color:var(--t2)">76%</span></div><div class="mini-bar"><div class="mini-fill" style="width:76%;background:#999"></div></div></div>
+          <div class="mini-bar-row"><div class="mini-bar-lbl"><span>Battery</span><span style="color:var(--t2)">88%</span></div><div class="mini-bar"><div class="mini-fill" style="width:88%;background:var(--mil-friend)"></div></div></div>
+          <div class="soh-row"><span class="soh-sub">Propulsion</span><span class="soh-st ok">Nominal</span></div>
+          <div class="soh-row"><span class="soh-sub">Docking Mechanism</span><span class="soh-st ok">Nominal &#183; Armed</span></div>
+          <div class="soh-row"><span class="soh-sub">LiDAR (Approach)</span><span class="soh-st ok">Nominal</span></div>
+          <div class="soh-row"><span class="soh-sub">Vis-Nav Camera</span><span class="soh-st ok">Nominal</span></div>
+          <div class="soh-row"><span class="soh-sub">GNSS Receiver</span><span class="soh-st ok">Nominal</span></div>
+          <div class="soh-row"><span class="soh-sub">Power (Solar)</span><span class="soh-st val">102% nominal</span></div>
+          <div class="soh-row"><span class="soh-sub">Thermal</span><span class="soh-st val">22&#176;C &#183; Nominal</span></div>
+          <div class="soh-row"><span class="soh-sub">ADCS</span><span class="soh-st ok">Nominal &#183; &#177;0.1&#176;</span></div>
+          <div class="soh-row"><span class="soh-sub">C2 Link</span><span class="soh-st ok">&#8722;81 dBm &#183; Nominal</span></div>
+          <div class="soh-row"><span class="soh-sub">ODC Link</span><span class="soh-st ok" id="soh-odc">Active &#183; 12ms</span></div>
+          <div class="soh-row"><span class="soh-sub">Data Recorder</span><span class="soh-st val">41% capacity</span></div>
+          <div class="soh-row"><span class="soh-sub">Crypto / KMI</span><span class="soh-st val">Valid &#183; expires 28d</span></div>
+          <div class="soh-row"><span class="soh-sub">Uptime</span><span class="soh-st val">412 days</span></div>
+        </div>
+        <div id="soh-ATLAS-4" style="display:none">
+          <div class="soh-header">
+            <div class="soh-name">ATLAS-4</div>
+            <div class="soh-role">COMMS RELAY &#183; LEO 440km &#183; USSF</div>
+            <div class="soh-pct-row"><div><div class="soh-pct" style="color:var(--mil-friend)">99%</div><div class="soh-pct-lbl">OVERALL SOH</div></div></div>
+            <div class="soh-uplink">Last uplink: <span style="color:var(--t2)">04:16:44Z &#183; 2 min ago</span></div>
+          </div>
+          <div class="mini-bar-row"><div class="mini-bar-lbl"><span>Fuel Reserve</span><span style="color:var(--t2)">54%</span></div><div class="mini-bar"><div class="mini-fill" style="width:54%;background:#ccc"></div></div></div>
+          <div class="mini-bar-row"><div class="mini-bar-lbl"><span>Battery</span><span style="color:var(--t2)">92%</span></div><div class="mini-bar"><div class="mini-fill" style="width:92%;background:var(--mil-friend)"></div></div></div>
+          <div class="soh-row"><span class="soh-sub">Comm Payload</span><span class="soh-st ok">Nominal</span></div>
+          <div class="soh-row"><span class="soh-sub">Ka-Band Antenna</span><span class="soh-st ok">Nominal &#183; Pointed</span></div>
+          <div class="soh-row"><span class="soh-sub">Crosslink</span><span class="soh-st ok">Active &#183; RAVEN-7</span></div>
+          <div class="soh-row"><span class="soh-sub">ODC Relay Role</span><span class="soh-st ok">Bridging &#183; Active</span></div>
+          <div class="soh-row"><span class="soh-sub">ADCS</span><span class="soh-st ok">Nominal</span></div>
+          <div class="soh-row"><span class="soh-sub">Uptime</span><span class="soh-st val">1,204 days</span></div>
+        </div>
+        <div id="soh-GEODSS-4" style="display:none">
+          <div class="soh-header">
+            <div class="soh-name">GEODSS NODE 4</div>
+            <div class="soh-role">GROUND SENSOR &#183; MAUI, HI &#183; AFSPC</div>
+            <div class="soh-pct-row"><div><div class="soh-pct" style="color:var(--mil-friend)">100%</div><div class="soh-pct-lbl">SENSOR HEALTH</div></div></div>
+            <div class="soh-uplink">Last data: <span style="color:var(--t2)">04:18:45Z &#183; Active tracking</span></div>
+          </div>
+          <div class="soh-row"><span class="soh-sub">Primary Telescope</span><span class="soh-st ok">Nominal</span></div>
+          <div class="soh-row"><span class="soh-sub">Objects Tracked</span><span class="soh-st val">2 (RAVEN-7, OSC-DEMO)</span></div>
+          <div class="soh-row"><span class="soh-sub">TLE Freshness</span><span class="soh-st ok">&lt; 6hr</span></div>
+          <div class="soh-row"><span class="soh-sub">Pass Duration</span><span class="soh-st val">08:14 remaining</span></div>
+          <div class="soh-row"><span class="soh-sub">Weather</span><span class="soh-st ok">Clear &#183; Seeing good</span></div>
+        </div>
+        <div id="soh-OSC-DEMO" style="display:none">
+          <div class="soh-header">
+            <div class="soh-name">OSC-DEMO</div>
+            <div class="soh-role">PASSIVE TARGET &#183; LEO 412km</div>
+            <div class="soh-pct-row"><div><div class="soh-pct" style="color:var(--t2)">&#8212;</div><div class="soh-pct-lbl">PASSIVE &#183; NO UPLINK</div></div></div>
+          </div>
+          <div class="soh-row"><span class="soh-sub">Tracking Source</span><span class="soh-st val">RAVEN-7 LiDAR + Vis-Nav</span></div>
+          <div class="soh-row"><span class="soh-sub">Relative Range</span><span class="soh-st val" id="osc-r">847m</span></div>
+          <div class="soh-row"><span class="soh-sub">Closing Velocity</span><span class="soh-st val">0.45 m/s</span></div>
+          <div class="soh-row"><span class="soh-sub">Attitude (est.)</span><span class="soh-st ok">Stable &#183; &#177;2.1&#176;</span></div>
+          <div class="soh-row"><span class="soh-sub">Tumble Rate</span><span class="soh-st ok">&lt;0.1 deg/s</span></div>
+          <div class="soh-row"><span class="soh-sub">Docking Port</span><span class="soh-st ok">Acquired &#183; Aligned</span></div>
+          <div class="soh-row"><span class="soh-sub">Debris Clearance</span><span class="soh-st ok">Clear</span></div>
+        </div>
+      </div>
+
+      <!-- TIMELINE TAB -->
+      <div class="tab-pane" id="lp-tl" role="tabpanel" aria-labelledby="lt-t"
+           aria-live="polite" aria-relevant="additions">
+        <div class="sec-hd" style="display:flex;align-items:center;justify-content:space-between">
+          <span>Event Timeline &#8212; OP IRONVAULT</span>
+          <div style="display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:8px;letter-spacing:.14em;color:var(--mil-friend)">
+            <div class="live-dot" style="width:5px;height:5px;border-radius:50%;background:var(--mil-friend)" aria-hidden="true"></div>LIVE
+          </div>
+        </div>
+        <div id="tl-log">
+          <div class="phase-marker"><div class="pm-line"></div><div class="pm-label">&#9670; Terminal Approach &#8212; in progress</div><div class="pm-line"></div></div>
+          <div class="tl-entry"><div class="tl-time">04:17:02Z</div><div><div class="tl-text done"><span class="tl-dot" style="background:var(--mil-friend)" aria-hidden="true"></span>Uplink complete &#8212; 100% valid &#8212; RAVEN-7</div><div class="tl-ref">RAVEN-7 &#183; SOH 97% &#183; Ka-Band</div></div></div>
+          <div class="tl-entry"><div class="tl-time">04:12:44Z</div><div><div class="tl-text done"><span class="tl-dot" style="background:var(--mil-friend)" aria-hidden="true"></span>B07 Terminal Micro-Correction (Cross-Track Restoration) &#8212; &#916;v 0.12 m/s &#8212; nominal</div><div class="tl-ref">EVT-B07 &#183; Approved SF-OPS-DELTA-7</div></div></div>
+          <div class="tl-entry"><div class="tl-time">04:08:19Z</div><div><div class="tl-text auto"><span class="tl-dot" style="background:#888" aria-hidden="true"></span>ODC auto &#8212; sensor fusion update, 6 sources fused &#8212; covariance improved</div><div class="tl-ref">APEX-ODC-LEO-03 &#183; Autonomous</div></div></div>
+          <div class="tl-entry"><div class="tl-time">04:02:11Z</div><div><div class="tl-text done"><span class="tl-dot" style="background:var(--mil-friend)" aria-hidden="true"></span>Approach window revised 8&#8594;12 min &#8212; fuel margin secured at 9.4 kg</div><div class="tl-ref">EVT-W01 &#183; Approved SF-OPS-DELTA-7</div></div></div>
+          <div class="tl-entry"><div class="tl-time">03:55:30Z</div><div><div class="tl-text auto"><span class="tl-dot" style="background:#888" aria-hidden="true"></span>ODC auto &#8212; micro-correction &#916;v 0.04 m/s &#8212; cross-track drift corrected</div><div class="tl-ref">APEX-ODC-LEO-03 &#183; Autonomous</div></div></div>
+          <div class="tl-entry"><div class="tl-time">03:47:18Z</div><div><div class="tl-text auto"><span class="tl-dot" style="background:#888" aria-hidden="true"></span>ODC auto &#8212; atmospheric density model updated, TLE refresh cycle triggered</div><div class="tl-ref">APEX-ODC-LEO-03 &#183; Autonomous</div></div></div>
+          <div class="phase-marker"><div class="pm-line"></div><div class="pm-label">&#9670; Near-Field Approach &#8212; complete T+03:14Z</div><div class="pm-line"></div></div>
+          <div class="tl-entry"><div class="tl-time">03:31:06Z</div><div><div class="tl-text done"><span class="tl-dot" style="background:var(--mil-friend)" aria-hidden="true"></span>ATLAS-4 crosslink established &#8212; relay bridging confirmed &#8212; ODC latency 12ms</div><div class="tl-ref">ATLAS-4 &#183; Relay Active</div></div></div>
+          <div class="tl-entry"><div class="tl-time">03:14:22Z</div><div><div class="tl-text done"><span class="tl-dot" style="background:var(--mil-friend)" aria-hidden="true"></span>Phase transition: Far-Field &#8594; Near-Field &#8212; ODC authorized, 1 km gate cleared</div><div class="tl-ref">APEX-ODC-LEO-03 &#183; Phase Change</div></div></div>
+          <div class="tl-entry"><div class="tl-time">02:48:03Z</div><div><div class="tl-text done"><span class="tl-dot" style="background:var(--mil-friend)" aria-hidden="true"></span>B05 Approach Corridor Entry (Outer Gate) &#8212; &#916;v 0.34 m/s &#8212; nominal</div><div class="tl-ref">EVT-B05 &#183; Approved SF-OPS-DELTA-7</div></div></div>
+          <div class="tl-entry"><div class="tl-time">02:38:55Z</div><div><div class="tl-text done"><span class="tl-dot" style="background:var(--mil-friend)" aria-hidden="true"></span>B06 Near-Field Correction (Range-Rate Adjustment) &#8212; &#916;v 0.11 m/s &#8212; nominal</div><div class="tl-ref">EVT-B06 &#183; Approved SF-OPS-DELTA-7</div></div></div>
+          <div class="tl-entry"><div class="tl-time">02:31:17Z</div><div><div class="tl-text done"><span class="tl-dot" style="background:var(--mil-friend)" aria-hidden="true"></span>OSC-DEMO acquired by Vis-Nav at 2.1 km &#8212; LiDAR lock confirmed</div><div class="tl-ref">RAVEN-7 &#183; Sensor Acquisition</div></div></div>
+          <div class="phase-marker"><div class="pm-line"></div><div class="pm-label">&#9670; Phasing Burns &#8212; complete T+02:04Z</div><div class="pm-line"></div></div>
+          <div class="tl-entry"><div class="tl-time">02:04:55Z</div><div><div class="tl-text done"><span class="tl-dot" style="background:var(--mil-friend)" aria-hidden="true"></span>B04 Phasing Completion (Co-Elliptic Approach) &#8212; &#916;v 1.24 m/s &#8212; nominal</div><div class="tl-ref">EVT-B04 &#183; Approved SF-OPS-DELTA-7</div></div></div>
+          <div class="tl-entry"><div class="tl-time">01:33:41Z</div><div><div class="tl-text done"><span class="tl-dot" style="background:var(--mil-friend)" aria-hidden="true"></span>B03 Phasing Maneuver 2 (Period Adjustment) &#8212; &#916;v 0.88 m/s &#8212; nominal</div><div class="tl-ref">EVT-B03 &#183; Approved SF-OPS-DELTA-7</div></div></div>
+          <div class="tl-entry"><div class="tl-time">01:02:14Z</div><div><div class="tl-text done"><span class="tl-dot" style="background:var(--mil-friend)" aria-hidden="true"></span>B02 Phasing Maneuver 1 (Hohmann Transfer &#8212; Apogee Raise) &#8212; &#916;v 1.60 m/s &#8212; nominal</div><div class="tl-ref">EVT-B02 &#183; Approved SF-OPS-DELTA-7</div></div></div>
+          <div class="phase-marker"><div class="pm-line"></div><div class="pm-label">&#9670; Orbit Insertion &#8212; complete T+00:18Z</div><div class="pm-line"></div></div>
+          <div class="tl-entry"><div class="tl-time">00:18:02Z</div><div><div class="tl-text done"><span class="tl-dot" style="background:var(--mil-friend)" aria-hidden="true"></span>B01 Orbit Insertion Burn (LEO Circularization) &#8212; &#916;v 4.22 m/s &#8212; nominal</div><div class="tl-ref">EVT-B01 &#183; Approved SF-OPS-DELTA-7</div></div></div>
+          <div class="tl-entry"><div class="tl-time">00:04:18Z</div><div><div class="tl-text done"><span class="tl-dot" style="background:var(--mil-friend)" aria-hidden="true"></span>APEX-ODC-LEO-03 link established &#8212; mission handoff from ground complete</div><div class="tl-ref">APEX-ODC-LEO-03 &#183; Mission Handoff</div></div></div>
+          <div class="tl-entry"><div class="tl-time">00:00:00Z</div><div><div class="tl-text done"><span class="tl-dot" style="background:var(--mil-friend)" aria-hidden="true"></span>OP IRONVAULT commenced &#8212; RAVEN-7 launch confirmed, LC-39A, Eastern Range</div><div class="tl-ref">T+00:00:00 &#183; Mission Start</div></div></div>
+        </div>
+      </div>
+
+      <!-- CONTACTS TAB -->
+      <div class="tab-pane" id="lp-contacts" role="tabpanel" aria-labelledby="lt-c">
+        <!-- Next 3 open contact windows countdown -->
+        <div style="padding:10px 14px;border-bottom:1px solid var(--bd2);background:var(--bg)">
+          <div style="font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.20em;text-transform:uppercase;color:var(--t3);margin-bottom:8px">&#9670; &nbsp;Next Open Windows</div>
+          <div id="contact-countdown-cards">
+            <div class="ct-cw-card" id="cw-1">
+              <div class="ct-cw-top"><span class="ct-cw-name" id="cwn-1">Peterson SFB</span><span class="ct-cw-timer" id="cwt-1">T&minus;00:47</span></div>
+              <div class="ct-cw-meta" id="cwm-1">Ka-Band &middot; 12 min &middot; Policy Uplink + Telemetry</div>
+            </div>
+            <div class="ct-cw-card" id="cw-2">
+              <div class="ct-cw-top"><span class="ct-cw-name" id="cwn-2">KSAT Svalbard</span><span class="ct-cw-timer" id="cwt-2">T&minus;01:08</span></div>
+              <div class="ct-cw-meta" id="cwm-2">Ka-Band &middot; 10 min &middot; Telemetry Downlink</div>
+            </div>
+            <div class="ct-cw-card" id="cw-3">
+              <div class="ct-cw-top"><span class="ct-cw-name" id="cwn-3">Schriever SFB</span><span class="ct-cw-timer" id="cwt-3">T&minus;01:22</span></div>
+              <div class="ct-cw-meta" id="cwm-3">S-Band &middot; 8 min &middot; Telemetry</div>
+            </div>
+          </div>
+        </div>
+        <div class="sec-hd">ODC Node</div>
+        <div class="cc-card">
+          <div class="cc-top"><span class="cc-name">APEX-ODC-LEO-03</span><span class="cc-badge ODC">ODC &#183; PRIMARY</span></div>
+          <div class="cc-row"><span>Orbit</span><span>LEO &#183; 412km &#183; Co-orbital</span></div>
+          <div class="cc-row"><span>Link</span><span>Laser Comm &#183; 1.2 Gbps</span></div>
+          <div class="cc-row"><span>Latency</span><span style="color:var(--mil-friend)">12ms &#183; Real-time</span></div>
+          <div class="cc-row"><span>Status</span><span style="color:var(--mil-friend)" id="odc-status">Active &#183; Executing</span></div>
+          <div class="cc-row"><span>Decisions this pass</span><span style="color:#aaa" id="odc-dec">47</span></div>
+          <div class="cc-sched">
+            <div class="cc-sched-lbl">Policy Uplink</div>
+            <div class="cc-sched-item" id="odc-uplink">Via Peterson SFB &#183; T&#8722;00:47</div>
+          </div>
+        </div>
+
+        <div class="sec-hd">Ground Stations</div>
+        <div class="cc-card">
+          <div class="cc-top"><span class="cc-name">Peterson SFB</span><span class="cc-badge ACTIVE">ACTIVE</span></div>
+          <div class="cc-row"><span>Location</span><span>Colorado Springs, CO</span></div>
+          <div class="cc-row"><span>Network</span><span>AFSCN &#183; S / Ka</span></div>
+          <div class="cc-row"><span>Rate</span><span>2.4 Gbps</span></div>
+          <div class="cc-sched"><div class="cc-sched-lbl">Next &#8212; RAVEN-7</div>
+            <div class="cc-sched-item" id="cc-peterson">T&#8722;00:47 &#183; Ka-Band &#183; Policy Uplink</div></div>
+        </div>
+        <div class="cc-card">
+          <div class="cc-top"><span class="cc-name">KSAT Svalbard</span><span class="cc-badge ACTIVE">ACTIVE</span></div>
+          <div class="cc-row"><span>Location</span><span>78&#176;N &#183; Polar Node</span></div>
+          <div class="cc-row"><span>Network</span><span>KSAT &#183; S / X / Ka</span></div>
+          <div class="cc-row"><span>Rate</span><span>3.2 Gbps</span></div>
+          <div class="cc-sched"><div class="cc-sched-lbl">Next &#8212; RAVEN-7</div>
+            <div class="cc-sched-item">T&#8722;01:08 &#183; Ka-Band &#183; Telemetry</div></div>
+        </div>
+        <div class="cc-card">
+          <div class="cc-top"><span class="cc-name">Schriever SFB</span><span class="cc-badge ACTIVE">ACTIVE</span></div>
+          <div class="cc-row"><span>Location</span><span>Colorado Springs, CO</span></div>
+          <div class="cc-row"><span>Network</span><span>AFSCN &#183; S / Ka</span></div>
+          <div class="cc-sched"><div class="cc-sched-lbl">Next &#8212; RAVEN-7</div>
+            <div class="cc-sched-item">T&#8722;01:22 &#183; S-Band &#183; Telemetry</div></div>
+        </div>
+        <div class="cc-card">
+          <div class="cc-top"><span class="cc-name">Vandenberg SFB</span><span class="cc-badge STANDBY">STANDBY</span></div>
+          <div class="cc-row"><span>Location</span><span>Lompoc, CA</span></div>
+          <div class="cc-row"><span>Network</span><span>AFSCN &#183; S / X</span></div>
+          <div class="cc-sched"><div class="cc-sched-lbl">Next &#8212; RAVEN-7</div>
+            <div class="cc-sched-item">T&#8722;02:14 &#183; S-Band</div></div>
+        </div>
+
+        <!-- STATS SECTION INSIDE CONTACTS -->
+        <div class="ct-stats-hd">&#9670; &nbsp; Mission Stats</div>
+
+        <!-- Comm Resilience -->
+        <div class="ct-stats-section">
+          <div class="ct-sec-title">Comm Resilience</div>
+          <div class="link-bar-row" aria-label="Link quality">
+            <span class="ct-lbl">LINK</span>
+            <div class="link-bar" aria-hidden="true"><div class="link-fill" id="link-fill" style="width:94%"></div></div>
+            <span class="ct-val ok" id="link-pct">94%</span>
+          </div>
+          <div class="ct-row"><span class="ct-lbl">Station</span><span class="ct-val" id="comm-sta">Peterson SFB Relay 3</span></div>
+          <div class="ct-row"><span class="ct-lbl">Up / Down</span><span class="ct-val">2.4 / 8.7 Mbps</span></div>
+          <div class="bo-box" id="bo-box">
+            <div class="bo-title" id="bo-title">BLACKOUT WINDOW</div>
+            <div class="bo-timer-val" id="bo-timer">T&#8722;02:47</div>
+            <div class="bo-sub" id="bo-sub">14 min duration &#183; Pre-authorized: YES</div>
+          </div>
+        </div>
+
+        <!-- Intent Envelope -->
+        <div class="ct-stats-section">
+          <div class="ct-sec-title">Intent Envelope</div>
+          <div class="ct-row"><span class="ct-lbl">Corridor lat/vert</span><span class="ct-val">&#177;50m / &#177;20m</span></div>
+          <div class="ct-row"><span class="ct-lbl">Max rate @200m</span><span class="ct-val">0.30 m/s</span></div>
+          <div class="ct-row"><span class="ct-lbl">Max rate @50m</span><span class="ct-val">0.10 m/s</span></div>
+          <div class="ct-row"><span class="ct-lbl">Fuel floor</span><span class="ct-val">8.0 kg</span></div>
+          <div class="abort-box">
+            <div class="abort-title">ABORT TRIGGERS</div>
+            <div class="abort-item"><span>&#9679;</span> Rate &gt;2.5 m/s &#183; Attitude &gt;5&#176; &#183; Fuel &lt;8 kg</div>
+          </div>
+        </div>
+
+        <!-- Workload Ledger -->
+        <div class="ct-stats-section">
+          <div class="ct-sec-title">Workload Ledger</div>
+          <div class="wl-split">
+            <div><div class="wl-num auto" id="wl-auto">47</div><div class="wl-num-lbl">ODC Autonomous</div></div>
+            <div><div class="wl-num op">6</div><div class="wl-num-lbl">Operator-Actioned</div></div>
+          </div>
+          <div class="wl-bar-lbl"><span>Autonomy Rate</span><span id="wl-rate">88.7%</span></div>
+          <div class="wl-bar" aria-hidden="true"><div class="wl-fill" id="wl-fill" style="width:88.7%"></div></div>
+          <div class="wl-cat">Trajectory adjustments<span id="wl-traj">28</span></div>
+          <div class="wl-cat">Sensor fusion events<span>12</span></div>
+          <div class="wl-cat">Timing / window adj.<span>7</span></div>
+        </div>
+
+      </div><!-- end contacts tab-pane -->
+    </div><!-- end panel-content -->
+  </div><!-- end panel-inner -->
+</div><!-- end left-panel -->
+
+<!-- CENTER — TRAJECTORY HERO -->
+<div class="center-view">
+
+  <!-- TRAJECTORY TOPBAR: all controls in one flex bar -->
+  <div class="traj-topbar">
+    <div class="traj-title-grp">
+      <h2 class="traj-title">Trajectory Monitor</h2>
+      <div class="traj-phase" id="traj-phase">TERMINAL APPROACH</div>
+    </div>
+    <div class="traj-stats-row">
+      <div class="tstat">Range: <strong id="tr-range">847m</strong></div>
+      <div class="tstat">Cross-track: <strong id="tr-ct">+12.0m</strong></div>
+      <div class="tstat">Deviation: <strong id="tr-dev">0.84&#963;</strong></div>
+      <div class="tstat">Rate: <strong id="tr-rate">0.45 m/s</strong></div>
+      <div class="tstat">ETA dock: <strong id="tr-eta">~31 min</strong></div>
+    </div>
+    <div class="corr-badge in" id="corr-badge" aria-live="polite">IN CORRIDOR</div>
+    <button class="fs-btn" id="fs-btn" onclick="toggleFullViz()"
+            aria-label="Toggle full-screen trajectory visualizer" title="Expand to full screen">
+      <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+        <path d="M1 4V1h3M8 1h3v3M11 8v3H8M4 11H1V8"/>
+      </svg>
+      EXPAND
+    </button>
+  </div>
+
+  <!-- TRAJECTORY CANVAS: fills remaining space -->
+  <div class="traj-canvas">
+    <div class="bo-overlay" id="bo-overlay">
+      <div class="bo-lbl">COMM BLACKOUT IN PROGRESS</div>
+      <div class="bo-sublbl">ODC EXECUTING WITHIN APPROVED ENVELOPE</div>
+      <div class="bo-sublbl" id="bo-resume">COMM RESUME IN --:--</div>
+    </div>
+    <svg id="traj-svg" style="flex:1" viewBox="0 0 800 600" preserveAspectRatio="none"
+         role="img" aria-label="Trajectory display: planned vs actual approach path with corridor boundaries">
+      <title>Planned vs Actual Trajectory</title>
+
+      <!-- Background -->
+      <rect width="800" height="600" fill="#080808"/>
+
+      <!-- Fine grid -->
+      <defs>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,.025)" stroke-width=".5"/>
+        </pattern>
+        <!-- Arrowhead for velocity vector (friendly blue) -->
+        <marker id="arr-vv" viewBox="0 0 10 10" refX="8" refY="5"
+                markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M1 2L8 5L1 8" fill="none" stroke="#80E0FF" stroke-width="2" stroke-linecap="round"/>
+        </marker>
+        <!-- Arrowhead for predicted end-state (hostile red) -->
+        <marker id="arr-pe" viewBox="0 0 10 10" refX="8" refY="5"
+                markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+          <path d="M1 2L8 5L1 8" fill="none" stroke="#FF8080" stroke-width="2" stroke-linecap="round"/>
+        </marker>
+      </defs>
+      <rect width="800" height="600" fill="url(#grid)"/>
+
+      <!-- Range rings from target -->
+      <circle cx="400" cy="50" r="80"  fill="none" stroke="rgba(255,255,255,.04)" stroke-width=".5" stroke-dasharray="4,6"/>
+      <circle cx="400" cy="50" r="180" fill="none" stroke="rgba(255,255,255,.04)" stroke-width=".5" stroke-dasharray="4,6"/>
+      <circle cx="400" cy="50" r="300" fill="none" stroke="rgba(255,255,255,.04)" stroke-width=".5" stroke-dasharray="4,6"/>
+      <circle cx="400" cy="50" r="440" fill="none" stroke="rgba(255,255,255,.04)" stroke-width=".5" stroke-dasharray="4,6"/>
+
+      <!-- Range labels on rings -->
+      <text x="485" y="134" font-family="Roboto Mono,monospace" font-size="8" fill="rgba(255,255,255,.22)">200m</text>
+      <text x="585" y="234" font-family="Roboto Mono,monospace" font-size="8" fill="rgba(255,255,255,.22)">500m</text>
+      <text x="705" y="354" font-family="Roboto Mono,monospace" font-size="8" fill="rgba(255,255,255,.22)">1000m</text>
+
+      <!-- Approach corridor fill -->
+      <polygon id="corridor-fill" points="400,50 280,580 520,580" fill="rgba(255,255,255,.03)"/>
+
+      <!-- Corridor boundaries -->
+      <line x1="400" y1="50" x2="280" y2="580" stroke="rgba(255,255,255,.18)" stroke-width=".8" stroke-dasharray="8,7"/>
+      <line x1="400" y1="50" x2="520" y2="580" stroke="rgba(255,255,255,.18)" stroke-width=".8" stroke-dasharray="8,7"/>
+
+      <!-- Planned centerline -->
+      <line x1="400" y1="580" x2="400" y2="50" stroke="rgba(255,255,255,.28)" stroke-width="1.2" stroke-dasharray="10,10"/>
+
+      <!-- BURN MARKERS on planned path (historic) -->
+      <!-- B01 — orbit insertion -->
+      <circle cx="400" cy="558" r="4" fill="none" stroke="rgba(128,224,255,.7)" stroke-width="1.2"/>
+      <text x="410" y="562" font-family="Roboto Mono,monospace" font-size="7.5" fill="rgba(185,255,0,.7)">B01 &#183; LEO Circularization</text>
+      <!-- B02 — phasing 1 -->
+      <circle cx="400" cy="500" r="4" fill="none" stroke="rgba(128,224,255,.7)" stroke-width="1.2"/>
+      <text x="410" y="504" font-family="Roboto Mono,monospace" font-size="7.5" fill="rgba(185,255,0,.7)">B02 &#183; Hohmann Transfer</text>
+      <!-- B03 — phasing 2 -->
+      <circle cx="400" cy="440" r="4" fill="none" stroke="rgba(128,224,255,.7)" stroke-width="1.2"/>
+      <text x="410" y="444" font-family="Roboto Mono,monospace" font-size="7.5" fill="rgba(185,255,0,.7)">B03 &#183; Period Adjustment</text>
+      <!-- B04 — phasing complete -->
+      <circle cx="400" cy="370" r="4" fill="none" stroke="rgba(128,224,255,.7)" stroke-width="1.2"/>
+      <text x="410" y="374" font-family="Roboto Mono,monospace" font-size="7.5" fill="rgba(185,255,0,.7)">B04 &#183; Co-Elliptic Appr.</text>
+      <!-- B05 — corridor entry -->
+      <circle cx="400" cy="295" r="4" fill="none" stroke="rgba(128,224,255,.7)" stroke-width="1.2"/>
+      <text x="410" y="299" font-family="Roboto Mono,monospace" font-size="7.5" fill="rgba(185,255,0,.7)">B05 &#183; Corridor Entry</text>
+      <!-- B06 — approach correction (approved by operator) -->
+      <circle cx="408" cy="220" r="4" fill="none" stroke="rgba(128,224,255,.7)" stroke-width="1.2"/>
+      <text x="418" y="224" font-family="Roboto Mono,monospace" font-size="7.5" fill="rgba(185,255,0,.7)">B06 &#183; Range-Rate Adj.</text>
+      <!-- B07 — micro-correction (approved by operator) -->
+      <circle cx="412" cy="180" r="4" fill="none" stroke="rgba(128,224,255,.7)" stroke-width="1.2"/>
+      <text x="422" y="184" font-family="Roboto Mono,monospace" font-size="7.5" fill="rgba(185,255,0,.7)">B07 &#183; Cross-Track Restore</text>
+
+      <!-- Actual path trail — segments color-coded by corridor compliance -->
+      <!-- Green = within corridor, amber = deviation, blue = ODC corrected -->
+      <polyline id="traj-trail"
+        points="400,558 402,500 404,440 405,380 406,330 408,280 410,240 412,200 414,170"
+        stroke="#80E0FF" stroke-width="1.8" fill="none" opacity=".8"/>
+
+      <!-- ODC autonomous correction markers -->
+      <circle cx="410" cy="240" r="3" fill="rgba(255,255,255,.8)" stroke="rgba(255,255,255,.3)" stroke-width="1"/>
+      <text x="368" y="243" font-family="Roboto Mono,monospace" font-size="7" fill="rgba(255,255,255,.55)" text-anchor="end">ODC auto</text>
+      <circle cx="412" cy="200" r="3" fill="rgba(255,255,255,.8)" stroke="rgba(255,255,255,.3)" stroke-width="1"/>
+      <text x="370" y="203" font-family="Roboto Mono,monospace" font-size="7" fill="rgba(255,255,255,.55)" text-anchor="end">ODC auto</text>
+
+      <!-- Future planned path -->
+      <line id="future-line" x1="414" y1="170" x2="400" y2="50" stroke="rgba(255,255,255,.15)" stroke-width="1" stroke-dasharray="5,10"/>
+
+      <!-- VEHICLE — glow + dot -->
+      <circle id="v-glow3" cx="414" cy="170" r="26" fill="rgba(255,255,255,.025)"/>
+      <circle id="v-glow2" cx="414" cy="170" r="14" fill="rgba(255,255,255,.055)"/>
+      <circle id="v-glow1" cx="414" cy="170" r="7"  fill="rgba(255,255,255,.12)"/>
+      <circle id="v-dot"   cx="414" cy="170" r="4.5" fill="#ffffff"/>
+      <!-- Vehicle label -->
+      <text id="v-label" x="426" y="168" font-family="Roboto Mono,monospace" font-size="9" fill="rgba(255,255,255,.7)" font-weight="700">RAVEN-7</text>
+
+      <!-- TARGET -->
+      <line x1="390" y1="50" x2="410" y2="50" stroke="rgba(255,255,255,.75)" stroke-width="1.5"/>
+      <line x1="400" y1="40" x2="400" y2="60" stroke="rgba(255,255,255,.75)" stroke-width="1.5"/>
+      <circle cx="400" cy="50" r="6" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1"/>
+      <text x="413" y="47" font-family="Roboto Mono,monospace" font-size="8.5" fill="rgba(255,255,255,.5)" font-weight="700">OSC-DEMO</text>
+
+      <!-- ATLAS-4 relay (support, off to side) -->
+      <circle cx="680" cy="180" r="4" fill="rgba(255,255,255,.6)" stroke="rgba(255,255,255,.25)" stroke-width="1"/>
+      <text x="690" y="184" font-family="Roboto Mono,monospace" font-size="8" fill="rgba(255,255,255,.55)">ATLAS-4</text>
+      <line x1="414" y1="170" x2="680" y2="180" stroke="rgba(255,255,255,.10)" stroke-width=".75" stroke-dasharray="5,8"/>
+
+      <!-- GEODSS sensor footprint indicator -->
+      <text x="100" y="520" font-family="Roboto Mono,monospace" font-size="8" fill="rgba(255,255,255,.18)">GEODSS-4</text>
+      <text x="100" y="532" font-family="Roboto Mono,monospace" font-size="7.5" fill="rgba(255,255,255,.12)">Maui, HI &#183; Tracking</text>
+      <line x1="140" y1="512" x2="405" y2="175" stroke="rgba(255,255,255,.06)" stroke-width=".5" stroke-dasharray="4,10"/>
+
+      <!-- Cross-track axis label -->
+      <text x="30" y="590" font-family="Roboto Mono,monospace" font-size="8" fill="rgba(255,255,255,.25)">&#8592; &#8722;150m CT</text>
+      <text x="680" y="590" font-family="Roboto Mono,monospace" font-size="8" fill="rgba(255,255,255,.25)">+150m CT &#8594;</text>
+
+      <!-- Legend top-right -->
+      <line x1="610" y1="18" x2="632" y2="18" stroke="rgba(255,255,255,.30)" stroke-width="1.2" stroke-dasharray="7,7"/>
+      <text x="636" y="22" font-family="Roboto Mono,monospace" font-size="8" fill="rgba(255,255,255,.4)">Planned</text>
+      <line x1="610" y1="32" x2="632" y2="32" stroke="#80E0FF" stroke-width="1.8" opacity=".8"/>
+      <text x="636" y="36" font-family="Roboto Mono,monospace" font-size="8" fill="rgba(255,255,255,.4)">Actual</text>
+      <circle cx="618" cy="46" r="3" fill="rgba(255,255,255,.8)"/>
+      <text x="636" y="50" font-family="Roboto Mono,monospace" font-size="8" fill="rgba(255,255,255,.4)">ODC Auto</text>
+      <circle cx="618" cy="60" r="3.5" fill="none" stroke="rgba(128,224,255,.7)" stroke-width="1.2"/>
+      <text x="636" y="64" font-family="Roboto Mono,monospace" font-size="8" fill="rgba(255,255,255,.4)">Burn</text>
+
+      <!-- Deviation indicator (top-left overlay) -->
+      <rect x="12" y="12" width="150" height="62" fill="rgba(0,0,0,.6)" stroke="rgba(255,255,255,.08)" stroke-width=".5"/>
+      <text x="20" y="28" font-family="Roboto Mono,monospace" font-size="8" fill="rgba(255,255,255,.4)" letter-spacing=".1em">DEVIATION</text>
+      <text x="20" y="46" font-family="Roboto Mono,monospace" font-size="18" fill="#fff" font-weight="700" id="dev-overlay">0.84&#963;</text>
+      <text x="20" y="62" font-family="Roboto Mono,monospace" font-size="8" fill="rgba(255,255,255,.3)" id="dev-status">WITHIN CORRIDOR</text>
+
+
+      <!-- ══ OVERLAY: PREDICTED END-STATE ══════════════════════ -->
+      <g id="ov-pred-end">
+        <line id="pred-end-line" x1="414" y1="170" x2="440" y2="128"
+              stroke="#FF8080" stroke-width="1.5" stroke-dasharray="6,4" opacity=".85"
+              marker-end="url(#arr-pe)"/>
+        <circle id="pred-end-dot" cx="440" cy="128" r="5.5"
+                fill="none" stroke="#FF8080" stroke-width="1.2" opacity=".7"/>
+        <text id="pred-end-lbl" x="448" y="126" font-family="Roboto Mono,monospace"
+              font-size="8" fill="rgba(255,128,128,.65)">projected track</text>
+      </g>
+
+      <!-- ══ OVERLAY: VELOCITY VECTOR ═══════════════════════════ -->
+      <g id="ov-vel">
+        <line id="vel-line" x1="414" y1="170" x2="414" y2="148"
+              stroke="#80E0FF" stroke-width="2" stroke-linecap="round"
+              marker-end="url(#arr-vv)" opacity=".9"/>
+        <text id="vel-lbl" x="418" y="148" font-family="Roboto Mono,monospace"
+              font-size="7.5" fill="rgba(128,224,255,.6)">0.45 m/s</text>
+      </g>
+
+      <!-- ══ OVERLAY: POSITION UNCERTAINTY ELLIPSE ══════════════ -->
+      <g id="ov-uncert">
+        <ellipse id="uncert-ellipse" cx="414" cy="170" rx="22" ry="14"
+                 fill="none" stroke="#80E0FF" stroke-width="0.8"
+                 stroke-dasharray="4,3" opacity=".38"/>
+      </g>
+
+      <!-- ══ OVERLAY: UPCOMING BURN PROJECTED MARKERS ═══════════ -->
+      <g id="ov-upcoming">
+        <!-- Phase gate: 200m — dashed ring + label -->
+        <line x1="320" y1="78" x2="480" y2="78"
+              stroke="rgba(255,255,0,.14)" stroke-width=".7" stroke-dasharray="5,6"/>
+        <text x="487" y="82" font-family="Roboto Mono,monospace" font-size="7.5"
+              fill="rgba(255,255,0,.40)">200m gate</text>
+        <!-- Phase gate: 50m -->
+        <line x1="356" y1="57" x2="444" y2="57"
+              stroke="rgba(255,255,0,.12)" stroke-width=".7" stroke-dasharray="4,5"/>
+        <text x="447" y="61" font-family="Roboto Mono,monospace" font-size="7.5"
+              fill="rgba(255,255,0,.35)">50m gate</text>
+
+        <!-- B09: Final Approach Burn at 200m (y≈78) -->
+        <circle cx="400" cy="78" r="7" fill="none"
+                stroke="#FFFF00" stroke-width="1.2" stroke-dasharray="5,4" opacity=".75"/>
+        <polygon points="400,73 403,79 397,79" fill="#FFFF00" opacity=".55"/>
+        <text x="412" y="76" font-family="Roboto Mono,monospace" font-size="8"
+              font-weight="700" fill="rgba(255,255,0,.80)">B09 Co-Elliptic Descent</text>
+        <text x="412" y="86" font-family="Roboto Mono,monospace" font-size="7"
+              fill="rgba(255,255,0,.45)">&#916;v 0.08 m/s &#183; T+~24min</text>
+
+        <!-- B10: Docking Translation at 50m (y≈57) -->
+        <circle cx="400" cy="57" r="5.5" fill="none"
+                stroke="#FFFF00" stroke-width="1" stroke-dasharray="4,4" opacity=".65"/>
+        <polygon points="400,53 402,58 398,58" fill="#FFFF00" opacity=".45"/>
+        <text x="355" y="52" font-family="Roboto Mono,monospace" font-size="7.5"
+              font-weight="700" fill="rgba(255,255,0,.70)" text-anchor="end">B10 Docking Translation &#916;v 0.04</text>
+
+        <!-- B11: Contact Capture near docking (y≈53) -->
+        <circle cx="400" cy="53" r="3.5" fill="none"
+                stroke="#FFFF00" stroke-width="1" stroke-dasharray="3,3" opacity=".55"/>
+        <text x="355" y="44" font-family="Roboto Mono,monospace" font-size="7"
+              fill="rgba(255,255,0,.55)" text-anchor="end">B11 Contact Capture &#183; T+~31min</text>
+
+        <!-- Connecting dashed path from vehicle to B09 (projected approach line) -->
+        <line x1="400" y1="170" x2="400" y2="86"
+              stroke="rgba(255,255,0,.12)" stroke-width=".7" stroke-dasharray="3,8"/>
+      </g>
+
+      <!-- ══ UPDATE CADENCE LABEL (bottom right) ════════════════ -->
+      <!-- Update cadence label -->
+      <text x="797" y="594" font-family="Roboto Mono,monospace" font-size="7.5" fill="rgba(255,255,255,.18)" text-anchor="end">ODC UPDATE CADENCE: 2s &#183; PLANNED vs ACTUALS</text>
+
+    </svg>
+    <div class="viz-filter-bar" role="group" aria-label="Visualizer overlays">
+    <span class="vfb-label">&#9670; &nbsp;OVERLAYS</span>
+    <div class="vfb-sep" aria-hidden="true"></div>
+    <button class="vfb-toggle on" id="vf-pred-end" onclick="toggleVizFilter('pred-end',this)"
+            aria-pressed="true" aria-label="Toggle predicted end-state overlay">
+      <span class="vfb-dot" style="background:#FF8080" aria-hidden="true"></span>
+      PRED. END-STATE
+    </button>
+    <button class="vfb-toggle on" id="vf-vel" onclick="toggleVizFilter('vel',this)"
+            aria-pressed="true" aria-label="Toggle velocity vector overlay">
+      <span class="vfb-dot" style="background:#80E0FF" aria-hidden="true"></span>
+      VELOCITY VECTOR
+    </button>
+    <button class="vfb-toggle on" id="vf-uncert" onclick="toggleVizFilter('uncert',this)"
+            aria-pressed="true" aria-label="Toggle position uncertainty overlay">
+      <span class="vfb-dot" style="background:#80E0FF;opacity:.5" aria-hidden="true"></span>
+      UNCERTAINTY
+    </button>
+    <button class="vfb-toggle on" id="vf-burns" onclick="toggleVizFilter('burns',this)"
+            aria-pressed="true" aria-label="Toggle upcoming burn markers">
+      <span class="vfb-dot" style="background:#FFFF00" aria-hidden="true"></span>
+      UPCOMING BURNS
+    </button>
+  </div>
+  </div>
+
+</div><!-- end center-view -->
+<div class="side-panel right-panel" id="right-panel" role="region" aria-label="Approval queue">
+  <button class="panel-toggle" id="rp-toggle" onclick="togglePanel('right')" aria-label="Toggle right panel" aria-expanded="true">
+    <svg width="8" height="12" viewBox="0 0 8 12" fill="none"><path d="M2 1L6 6L2 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+  </button>
+  <button class="panel-collapsed-strip" onclick="togglePanel('right')"
+        aria-label="Expand queue panel" tabindex="0">
+  <span class="pcs-icon">&#9664;</span>
+  <span class="pcs-label">Queue</span>
+</button>
+  <div class="panel-inner">
+    <div class="panel-tabs" role="tablist" aria-label="Right panel">
+      <button class="ptab active" role="tab" aria-selected="true" aria-controls="rp-queue" id="rt-q">Queue</button>
+    </div>
+    <div class="panel-content" style="display:flex;flex-direction:column;overflow:hidden">
+
+      <!-- Queue filter -->
+      <div style="padding:8px 14px;border-bottom:1px solid var(--bd);
+        background:var(--bg);flex-shrink:0;display:flex;align-items:center;gap:6px">
+        <span style="font-family:var(--mono);font-size:9px;color:var(--t3);
+          letter-spacing:.14em;text-transform:uppercase">Filter:</span>
+        <button id="qf-all" class="qf-chip qf-active" onclick="qFilter('all',this)"
+          aria-pressed="true" aria-label="Show all queue items">ALL</button>
+        <button id="qf-action" class="qf-chip" onclick="qFilter('action',this)"
+          aria-pressed="false" aria-label="Show only items requiring action">
+          ACTION REQUIRED
+        </button>
+      </div>
+
+      <!-- Next Action -->
+      <div class="next-action" role="region" aria-label="Next required action">
+        <div class="na-hd">&#9670; &nbsp; Next Action Required</div>
+        <div class="na-title rb" id="na-title">Trajectory 0.84&#963; deviation &#8212; corridor breach in 4:12</div>
+        <div class="na-row">
+          <div>
+            <div class="na-cd" id="na-cd" aria-live="polite">T&#8722;04:12</div>
+            <div style="font-family:var(--mono);font-size:8px;color:var(--t3);letter-spacing:.12em;text-transform:uppercase;margin-top:2px">Until Corridor Breach</div>
+          </div>
+          <div class="na-div" aria-hidden="true"></div>
+          <div>
+            <div class="na-status-lbl">Status</div>
+            <div>
+              <span class="na-status-dot" style="background:#fff" aria-hidden="true"></span>
+              <span class="na-status-txt" style="color:#fff">Critical &#8212; Approve Burn</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Queue — Upcoming Mission Activities -->
+      <div class="aq-list" role="list" id="aq-list">
+
+        <!-- CARD 1 — CRITICAL — B08 burn approval -->
+        <article class="aq-card aq-crit attn" id="card-1" role="listitem"
+                 aria-label="Critical: Trajectory deviation. Approval required for B08 burn.">
+          <div class="res-banner" id="res-1"><span class="res-txt" id="res-1-txt"></span></div>
+          <div class="aq-top" aria-hidden="true">
+            <span class="aq-badge CRITICAL">CRITICAL &#183; APPROVAL REQ.</span>
+            <span class="aq-timer" id="timer-1">T&#8722;04:12</span>
+          </div>
+          <div class="aq-title rb">B08 Station-Keeping Hold (Cross-Track Restoration)</div>
+          <div class="aq-sec">ODC Proposes</div>
+          <div class="aq-propose">&#916;v = 0.12 m/s for 0.8 s &#8212; scheduled T+00:18. Post-burn corridor compliance: 99.3%. Maneuver type: inline correction, prograde axis.</div>
+          <div class="aq-sec">If No Action</div>
+          <div class="aq-consequence" style="color:#ccc">Vehicle exits corridor boundary in 4:12 at current drift. ODC will not execute without operator approval.</div>
+          <div class="aq-conf" aria-label="Confidence 91%">
+            <span class="aq-conf-lbl">Confidence</span>
+            <div class="conf-bar" aria-hidden="true"><div class="conf-fill" style="width:91%;background:var(--mil-friend)"></div></div>
+            <span class="conf-pct" style="color:var(--mil-friend)">91%</span>
+          </div>
+          <div class="aq-actions">
+            <button class="aq-btn primary" onclick="resolveCard(1,'ok','B08 APPROVED')" aria-label="Approve B08 burn">APPROVE B08</button>
+            <button class="aq-btn" onclick="resolveCard(1,'ok','MODIFIED')" aria-label="Modify parameters">MODIFY</button>
+          </div>
+        </article>
+
+        <!-- CARD 2 — ELEVATED — Fuel budget -->
+        <article class="aq-card aq-elev" id="card-2" role="listitem"
+                 aria-label="Elevated: Fuel above prediction. ODC proposes extended approach window.">
+          <div class="res-banner" id="res-2"><span class="res-txt" id="res-2-txt"></span></div>
+          <div class="aq-top" aria-hidden="true">
+            <span class="aq-badge ELEVATED">ELEVATED &#183; APPROVAL REQ.</span>
+            <span class="aq-timer">T&#8722;08:44</span>
+          </div>
+          <div class="aq-title">Fuel budget deviation &#8212; 2.3% above model, drag exceeded prediction</div>
+          <div class="aq-sec">ODC Proposes</div>
+          <div class="aq-propose">Extend approach window 8&#8594;12 min to reduce &#916;v demand on B09 and B10. Projected margin at docking: 9.4 kg (above 8 kg floor).</div>
+          <div class="aq-sec">If No Action</div>
+          <div class="aq-consequence" style="color:#ccc">Margin falls 1.2 kg below reserve floor at terminal phase. ODC flags abort hold at T+01:44.</div>
+          <div class="aq-conf" aria-label="Confidence 84%">
+            <span class="aq-conf-lbl">Confidence</span>
+            <div class="conf-bar" aria-hidden="true"><div class="conf-fill" style="width:84%;background:var(--mil-unknown)"></div></div>
+            <span class="conf-pct" style="color:var(--mil-unknown)">84%</span>
+          </div>
+          <div class="aq-actions">
+            <button class="aq-btn primary" onclick="resolveCard(2,'ok','REVISION ACCEPTED')" aria-label="Accept revision">ACCEPT</button>
+            <button class="aq-btn" onclick="resolveCard(2,'no','OVERRIDDEN')" aria-label="Override">OVERRIDE</button>
+          </div>
+        </article>
+
+        <!-- CARD 3 — NOMINAL — Blackout authorization -->
+        <article class="aq-card aq-nom" id="card-3" role="listitem"
+                 aria-label="Nominal: Blackout window. ODC requests proceed authorization.">
+          <div class="res-banner" id="res-3"><span class="res-txt" id="res-3-txt"></span></div>
+          <div class="aq-top" aria-hidden="true">
+            <span class="aq-badge NOMINAL">NOMINAL &#183; CONFIRM</span>
+            <span class="aq-timer" id="timer-3">T+00:47</span>
+          </div>
+          <div class="aq-title">Comm blackout window &#8212; 14 min, ODC autonomous execution</div>
+          <div class="aq-sec">ODC Proposes</div>
+          <div class="aq-propose">Proceed autonomously within pre-authorized envelope. B09 Final Approach Burn (Co-Elliptic Descent) will execute during blackout window. Post-blackout audit log within 60 s of link restore.</div>
+          <div class="aq-sec">If No Action</div>
+          <div class="aq-consequence" style="color:var(--t2)">Absence of delay instruction treated as authorization. No action needed unless delay required.</div>
+          <div class="aq-conf" aria-label="Confidence 99%">
+            <span class="aq-conf-lbl">Confidence</span>
+            <div class="conf-bar" aria-hidden="true"><div class="conf-fill" style="width:99%;background:var(--mil-friend)"></div></div>
+            <span class="conf-pct" style="color:var(--mil-friend)">99%</span>
+          </div>
+          <div class="aq-actions">
+            <button class="aq-btn primary" onclick="resolveCard(3,'ok','CONFIRMED')" aria-label="Confirm proceed">CONFIRM</button>
+            <button class="aq-btn" onclick="resolveCard(3,'no','APPROACH DELAYED')" aria-label="Delay">DELAY</button>
+          </div>
+        </article>
+
+        <!-- CARD 4 — INFO — Peterson SFB contact window -->
+        <article class="aq-card aq-info" id="card-4" role="listitem"
+                 aria-label="Info: Peterson SFB ground contact window.">
+          <div class="aq-top" aria-hidden="true">
+            <span class="aq-badge INFO">SCHEDULED &#183; NO ACTION</span>
+            <span class="aq-timer">T&#8722;00:47</span>
+          </div>
+          <div class="aq-title">Ground Contact &#8212; Peterson SFB &#183; Ka-Band Policy Uplink</div>
+          <div class="aq-sec">Window</div>
+          <div class="aq-propose">12 min contact window. Policy envelope update + telemetry downlink. APEX-ODC-LEO-03 will receive updated intent parameters for B09&#8211;B11 authority bounds.</div>
+          <div class="aq-sec">Deliverables</div>
+          <div class="aq-propose">ODC authority envelope v4.2 &#183; Revised fuel floor if EVT-W02 approved &#183; B09 go/no-go authorization</div>
+        </article>
+
+        <!-- CARD 5 — INFO — B09 Final Approach -->
+        <article class="aq-card aq-info" id="card-5" role="listitem"
+                 aria-label="Info: B09 Final Approach Burn scheduled during blackout.">
+          <div class="aq-top" aria-hidden="true">
+            <span class="aq-badge INFO">UPCOMING &#183; IN BLACKOUT</span>
+            <span class="aq-timer">T+12:20</span>
+          </div>
+          <div class="aq-title">B09 Final Approach Burn (Co-Elliptic Descent) &#8212; 847m &#8594; 200m</div>
+          <div class="aq-sec">Parameters</div>
+          <div class="aq-propose">&#916;v = 0.08 m/s &#183; Duration 0.6 s &#183; Prograde axis &#183; ODC autonomous execution during blackout window. Post-burn range: 200m &#177;12m. Inner corridor entry confirmed on link restore.</div>
+          <div class="aq-sec">Authority</div>
+          <div class="aq-propose">Pre-authorized within approved intent envelope. No operator action required if blackout confirmed above.</div>
+        </article>
+
+        <!-- CARD 6 — INFO — Inner corridor entry -->
+        <article class="aq-card aq-info" role="listitem"
+                 aria-label="Info: Inner corridor entry at 200m.">
+          <div class="aq-top" aria-hidden="true">
+            <span class="aq-badge INFO">UPCOMING &#183; MILESTONE</span>
+            <span class="aq-timer">~T+14:00</span>
+          </div>
+          <div class="aq-title">Inner Corridor Entry &#8212; 200m Gate &#183; Phase: Final Approach</div>
+          <div class="aq-sec">Transition Criteria</div>
+          <div class="aq-propose">Range &#8804; 205m &#183; Cross-track &#8804; &#177;8m &#183; Rate &#8804; 0.30 m/s &#183; Attitude &#8804; &#177;2&#176;. All criteria must be met for ODC to authorize Final Approach phase transition. Operator override available via MODIFY intent envelope.</div>
+        </article>
+
+        <!-- CARD 7 — INFO — B10 Docking Translation -->
+        <article class="aq-card aq-info" role="listitem"
+                 aria-label="Info: B10 Docking Translation Burn.">
+          <div class="aq-top" aria-hidden="true">
+            <span class="aq-badge INFO">UPCOMING &#183; APPROVAL REQ.</span>
+            <span class="aq-timer">~T+22:00</span>
+          </div>
+          <div class="aq-title">B10 Docking Translation (Inner Approach) &#8212; 200m &#8594; 50m</div>
+          <div class="aq-sec">Parameters</div>
+          <div class="aq-propose">&#916;v = 0.04 m/s &#183; V-bar approach &#183; Closing rate 0.10 m/s max &#183; LiDAR-guided. ODC will flag for operator approval at 200m waypoint. Operator approval required before execution.</div>
+          <div class="aq-sec">Preconditions</div>
+          <div class="aq-propose">Inner corridor entry confirmed &#183; Docking port aligned &#183; Tumble rate &lt; 0.1 deg/s &#183; Fuel margin &gt; 8 kg</div>
+        </article>
+
+        <!-- CARD 8 — INFO — B11 Contact Capture -->
+        <article class="aq-card aq-info" role="listitem"
+                 aria-label="Info: B11 Contact Capture docking initiation.">
+          <div class="aq-top" aria-hidden="true">
+            <span class="aq-badge INFO">UPCOMING &#183; APPROVAL REQ.</span>
+            <span class="aq-timer">~T+31:00</span>
+          </div>
+          <div class="aq-title">B11 Contact Capture (Docking Initiation) &#8212; 50m &#8594; Capture</div>
+          <div class="aq-sec">Parameters</div>
+          <div class="aq-propose">Final translation &#916;v = 0.02 m/s &#183; Closing rate 0.05 m/s max &#183; Docking mechanism armed &#183; ODC locks approach guidance. This is the final approval gate before docking. Operator confirmation required.</div>
+          <div class="aq-sec">Post-Capture</div>
+          <div class="aq-propose">Mechanism latch verification &#183; Structural loads check &#183; B12 Departure Burn planning begins &#183; OP IRONVAULT success criteria evaluation</div>
+        </article>
+
+      </div><!-- end aq-list -->
+    </div><!-- end panel-content -->
+  </div><!-- end panel-inner -->
+</div><!-- end right-panel -->
+
+</div><!-- end main -->
+
+<!-- TIMELINE PANEL -->
+<div class="tl-panel" id="tl-panel">
+  <button class="tl-toggle" id="tl-toggle" onclick="toggleTimeline()"
+          aria-label="Toggle timeline panel" aria-expanded="true">
+    <svg class="tl-toggle-icon" width="10" height="7" viewBox="0 0 10 7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <path d="M1 5.5L5 1.5L9 5.5"/>
+    </svg>
+    <span class="tl-toggle-lbl">Timeline</span>
+  </button>
+
+  <!-- Tooltip (shared) -->
+  <div class="tl-tooltip" id="tl-tooltip"></div>
+
+  <!-- Controls bar -->
+  <div class="tl-controls-bar">
+    <div class="tl-time-display" id="tl-display">T+04:22:17</div>
+    <div class="tl-sep"></div>
+    <div class="tl-transport">
+      <button class="tl-btn" onclick="tlSeekRel(-300)" title="Back 5 min" aria-label="Rewind 5 minutes">&#9664;&#9664;</button>
+      <button class="tl-btn" onclick="tlSeekRel(-30)"  title="Back 30 sec" aria-label="Rewind 30 seconds">&#9664;</button>
+      <button class="tl-btn" id="tl-play-btn" onclick="tlTogglePlay()" aria-label="Play or pause">&#9654;</button>
+      <button class="tl-btn" onclick="tlSeekRel(30)"   title="Fwd 30 sec" aria-label="Forward 30 seconds">&#9654;</button>
+      <button class="tl-btn" onclick="tlSeekRel(300)"  title="Fwd 5 min" aria-label="Forward 5 minutes">&#9654;&#9654;</button>
+    </div>
+    <div class="tl-sep"></div>
+    <div class="tl-speed-group">
+      <button class="tl-speed-btn active" id="sp-60"   onclick="tlSetSpeed(60,this)">1&#215;</button>
+      <button class="tl-speed-btn"        id="sp-300"  onclick="tlSetSpeed(300,this)">5&#215;</button>
+      <button class="tl-speed-btn"        id="sp-1800" onclick="tlSetSpeed(1800,this)">30&#215;</button>
+    </div>
+    <div class="tl-sep"></div>
+    <div class="tl-zoom-group">
+      <button class="tl-zoom-btn" onclick="tlZoomAdj(-1)" aria-label="Zoom out">&#8722;</button>
+      <span class="tl-zoom-lbl" id="tl-zoom-lbl">1&#215;</span>
+      <button class="tl-zoom-btn" onclick="tlZoomAdj(1)" aria-label="Zoom in">+</button>
+    </div>
+    <div></div>
+    <div class="tl-phase-lbl">PHASE &nbsp;</div>
+    <div class="tl-phase-val" id="tl-phase-val">TERMINAL APPROACH</div>
+  </div>
+
+  <!-- Timeline body -->
+  <div class="tl-body">
+
+    <!-- Fixed header column -->
+    <div class="tl-header-col">
+      <div class="tl-ruler-corner"></div>
+      <div class="tl-header">PHASES</div>
+      <div class="tl-header">BURNS</div>
+      <div class="tl-header">CONTACTS</div>
+      <div class="tl-header">UPLINK / DL</div>
+    </div>
+
+    <!-- Scrollable track area -->
+    <div class="tl-scroll-area" id="tl-scroll">
+      <div class="tl-inner" id="tl-inner">
+        <div class="tl-ruler" id="tl-ruler"></div>
+        <div class="tl-track" id="track-phases"></div>
+        <div class="tl-track" id="track-burns"></div>
+        <div class="tl-track" id="track-contacts"></div>
+        <div class="tl-track" id="track-comms"></div>
+        <!-- Playhead -->
+        <div class="tl-playhead" id="tl-playhead">
+          <div class="tl-playhead-handle" id="tl-ph-handle"></div>
+        </div>
+        <!-- Live NOW marker -->
+        <div class="tl-now-line" id="tl-now-line">
+          <div class="tl-now-pip"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end tl-body -->
+  <!-- Right-click add burn context menu -->
+  <div id="burn-ctx-menu" style="
+    display:none;position:fixed;z-index:500;
+    background:#0d0d0d;border:1px solid rgba(255,255,255,.28);
+    padding:0;min-width:280px;max-width:300px;
+  " role="dialog" aria-modal="true" aria-label="Add burn">
+
+    <!-- Header with X -->
+    <div style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.10);
+      display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-family:var(--mono);font-size:9px;font-weight:700;
+          letter-spacing:.20em;text-transform:uppercase;color:var(--t3)">&#9670; &nbsp;ADD BURN</div>
+        <div id="ctx-time-lbl" style="font-family:var(--mono);font-size:9px;
+          color:var(--lime);letter-spacing:.08em;margin-top:2px">--:--:--</div>
+      </div>
+      <button onclick="ctx_close()"
+        style="background:transparent;border:none;color:var(--t3);cursor:pointer;
+        font-size:18px;line-height:1;padding:2px 6px;font-family:sans-serif"
+        aria-label="Close add burn window">&#215;</button>
+    </div>
+
+    <!-- Template list -->
+    <div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08)">
+      <div style="padding:3px 12px 4px;font-family:var(--mono);font-size:8px;
+        color:var(--t3);letter-spacing:.14em;text-transform:uppercase">Templates</div>
+      <div id="ctx-templates">
+        <button class="ctx-tpl-btn" onclick="ctx_useTemplate('Station-Keeping Hold','0.05 m/s','Inline correction · Prograde axis')" aria-label="Station-Keeping Hold template">
+          <span class="ctx-tpl-name">Station-Keeping Hold</span>
+          <span class="ctx-tpl-meta">&#916;v ~0.05 m/s &middot; Prograde</span>
+        </button>
+        <button class="ctx-tpl-btn" onclick="ctx_useTemplate('Cross-Track Correction','0.08 m/s','Out-of-plane · Normal axis')" aria-label="Cross-Track Correction template">
+          <span class="ctx-tpl-name">Cross-Track Correction</span>
+          <span class="ctx-tpl-meta">&#916;v ~0.08 m/s &middot; Normal axis</span>
+        </button>
+        <button class="ctx-tpl-btn" onclick="ctx_useTemplate('Approach Rate Adjustment','0.12 m/s','V-bar hold · Radial axis')" aria-label="Approach Rate Adjustment template">
+          <span class="ctx-tpl-name">Approach Rate Adjustment</span>
+          <span class="ctx-tpl-meta">&#916;v ~0.12 m/s &middot; Radial axis</span>
+        </button>
+        <button class="ctx-tpl-btn" onclick="ctx_useTemplate('Abort Departure','2.5 m/s','Emergency departure · Retrograde')" aria-label="Abort Departure template">
+          <span class="ctx-tpl-name">Abort Departure</span>
+          <span class="ctx-tpl-meta">&#916;v ~2.5 m/s &middot; Retrograde</span>
+        </button>
+        <button class="ctx-tpl-btn" onclick="ctx_useTemplate('Plane Change','1.8 m/s','Inclination adjustment · Normal axis')" aria-label="Plane Change template">
+          <span class="ctx-tpl-name">Plane Change</span>
+          <span class="ctx-tpl-meta">&#916;v ~1.8 m/s &middot; Normal axis</span>
+        </button>
+        <button class="ctx-tpl-btn" onclick="ctx_showCustom()" aria-label="Custom burn parameters">
+          <span class="ctx-tpl-name" style="color:var(--t2)">Custom&hellip;</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Custom fields (shown when Custom is selected) -->
+    <div id="ctx-custom-fields" style="display:none;padding:10px 12px;
+      border-bottom:1px solid rgba(255,255,255,.08)">
+      <input id="ctx-burn-name" type="text" placeholder="Burn name"
+        style="width:100%;background:transparent;border:1px solid rgba(255,255,255,.20);
+        color:#fff;font-family:var(--mono);font-size:10px;padding:5px 8px;
+        margin-bottom:6px;letter-spacing:.05em;outline:none;box-sizing:border-box"
+        aria-label="Custom burn name"/>
+      <input id="ctx-burn-dv" type="text" placeholder="&#916;v (e.g. 0.08 m/s)"
+        style="width:100%;background:transparent;border:1px solid rgba(255,255,255,.20);
+        color:#fff;font-family:var(--mono);font-size:10px;padding:5px 8px;
+        letter-spacing:.05em;outline:none;box-sizing:border-box"
+        aria-label="Delta-v"/>
+    </div>
+
+    <!-- Footer: Cancel + Confirm -->
+    <div style="padding:8px 12px;display:flex;gap:6px;border-top:1px solid rgba(255,255,255,.06)">
+      <button onclick="ctx_close()"
+        style="background:transparent;color:var(--t2);
+        border:1px solid rgba(255,255,255,.20);font-family:var(--mono);font-size:9px;
+        letter-spacing:.14em;text-transform:uppercase;padding:7px 14px;cursor:pointer;
+        transition:border-color .1s,color .1s"
+        onmouseover="this.style.color='#fff';this.style.borderColor='rgba(255,255,255,.5)'"
+        onmouseout="this.style.color='';this.style.borderColor=''"
+        aria-label="Cancel">CANCEL</button>
+      <button id="ctx-add-btn" onclick="ctx_addBurn()"
+        style="flex:1;background:var(--lime);color:#000;
+        border:none;font-family:var(--mono);font-size:9px;font-weight:700;
+        letter-spacing:.14em;text-transform:uppercase;padding:7px;cursor:pointer"
+        aria-label="Confirm and add burn">CONFIRM</button>
+    </div>
+  </div>
+</div><!-- end tl-panel -->
+
+
+</div><!-- end workspace -->
+
+<footer role="contentinfo">
+  <div class="ft-grp">
+    <div class="ft-item">Operator: <span>SF-OPS-DELTA-7</span></div>
+    <div class="ft-item">Op: <span>OP IRONVAULT</span></div>
+    <div class="ft-item">Vehicle: <span>RAVEN-7 &#8594; OSC-DEMO</span></div>
+  </div>
+  <div class="ft-grp">
+    <div class="ft-item">Freshness: <span id="fresh" aria-live="polite">LIVE &#8212; 0s</span></div>
+    <div class="ft-item">ODC Node: <span>APEX-ODC-LEO-03 &#183; 412km</span></div>
+    <div class="ft-item">APEX // <span>Build 2026.04.20</span></div>
+  </div>
+</footer>
+
+<!-- Timeline activity detail popup -->
+<div id="tl-detail-popup" style="
+  display:none;position:fixed;z-index:500;
+  background:#0d0d0d;border:1px solid rgba(255,255,255,.28);
+  min-width:280px;max-width:320px;
+" role="dialog" aria-modal="true" aria-labelledby="tdp-title">
+
+  <!-- Header -->
+  <div style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.10);
+    display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <div style="font-family:var(--mono);font-size:8px;font-weight:700;
+        letter-spacing:.20em;text-transform:uppercase;color:var(--t3);margin-bottom:2px"
+        id="tdp-track-label">BURNS</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--lime);
+        letter-spacing:.08em" id="tdp-time">T+--:--:--</div>
+    </div>
+    <button onclick="tdp_close()"
+      style="background:transparent;border:none;color:var(--t3);cursor:pointer;
+      font-family:var(--mono);font-size:16px;line-height:1;padding:2px 6px"
+      aria-label="Close detail popup">&#215;</button>
+  </div>
+
+  <!-- Content -->
+  <div style="padding:12px">
+    <div id="tdp-title" style="font-size:13px;font-weight:700;color:#fff;
+      letter-spacing:-.01em;line-height:1.3;margin-bottom:8px"></div>
+    <div id="tdp-meta" style="font-family:var(--mono);font-size:10px;
+      color:var(--t2);letter-spacing:.06em;line-height:1.8"></div>
+  </div>
+
+  <!-- Actions -->
+  <div style="padding:8px 12px;border-top:1px solid rgba(255,255,255,.08);
+    display:flex;gap:6px">
+    <button id="tdp-delete-btn" onclick="tdp_delete()"
+      style="flex:1;background:transparent;border:1px solid rgba(255,255,255,.22);
+      color:#fff;font-family:var(--mono);font-size:9px;font-weight:700;
+      letter-spacing:.16em;text-transform:uppercase;padding:7px;cursor:pointer;
+      transition:background .1s"
+      aria-label="Delete this activity (or press Delete key)">
+      DELETE
+    </button>
+    <button onclick="tdp_close()"
+      style="background:transparent;border:1px solid rgba(255,255,255,.14);
+      color:var(--t3);font-family:var(--mono);font-size:9px;letter-spacing:.12em;
+      text-transform:uppercase;padding:7px 12px;cursor:pointer"
+      aria-label="Close">CLOSE</button>
+  </div>
+</div>
+
+</body>
+</html      
+    </div><!-- end panel-content -->
+  </div><!-- end panel-inner -->
+</div><!-- end right-panel -->
+
+</div><!-- end main -->
+
+
+</div><!-- end workspace -->
+
+
+
+<script>
+/* ══ VISUALIZER STATE ═══════════════════════════════════════════ */
+let vizFilters = { 'pred-end': true, vel: true, uncert: true, burns: true };
+let viewMode   = 'topdown';
+let uncertSize = 26;     /* starts large, shrinks with ODC decisions */
+let profileActualPts = [
+  {t:-20,r:1387},{t:-17,r:1343},{t:-14,r:1261},{t:-10,r:1128},
+  {t:-8, r:1056},{t:-6, r:970}, {t:-4, r:913}, {t:-2, r:876},
+  {t:-1, r:858}, {t:0,  r:847}
+];
+
+function toggleVizFilter(key, btn){
+  vizFilters[key] = !vizFilters[key];
+  btn.classList.toggle('on', vizFilters[key]);
+  btn.setAttribute('aria-pressed', String(vizFilters[key]));
+  const idMap = {
+    'pred-end':'ov-pred-end', vel:'ov-vel', uncert:'ov-uncert', burns:'ov-upcoming'
+  };
+  const el = document.getElementById(idMap[key]);
+  if(el) el.style.display = vizFilters[key] ? '' : 'none';
+}
+
+function setViewMode(mode, btn){
+  viewMode = mode;
+  document.querySelectorAll('.vr-btn').forEach(b=>{
+    b.classList.remove('active'); b.setAttribute('aria-pressed','false');
+  });
+  btn.classList.add('active'); btn.setAttribute('aria-pressed','true');
+  const svg  = document.getElementById('traj-svg');
+  const prof = document.getElementById('profile-wrap');
+  if(mode === 'topdown'){
+    svg.classList.remove('hidden');
+    prof.classList.remove('active');
+    document.getElementById('vr-status').textContent =
+      'VIEW: PLANNED vs ACTUALS \u00a0\u00b7\u00a0 ODC 2s UPDATE CADENCE';
+  } else {
+    svg.classList.add('hidden');
+    prof.classList.add('active');
+    document.getElementById('vr-status').textContent =
+      'PLANNED vs ACTUALS \u00a0\u00b7\u00a0 ODC 2s UPDATE CADENCE';
+    updateProfileView();
+  }
+}
+
+/* ── PREDICTED END-STATE ──────────────────────────────────────── */
+function updatePredEndState(vx, vy){
+  if(!vizFilters['pred-end'] || trail.length < 4) return;
+  /* Extrapolate: average velocity from last 4 trail segments */
+  const n = trail.length;
+  const dx = (trail[n-1].x - trail[n-4].x) / 3;
+  const dy = (trail[n-1].y - trail[n-4].y) / 3;
+  /* Project 18 steps (36s of travel) forward */
+  const steps = 18;
+  const ex = vx + dx * steps;
+  const ey = vy + dy * steps;
+  const line = document.getElementById('pred-end-line');
+  const dot  = document.getElementById('pred-end-dot');
+  const lbl  = document.getElementById('pred-end-lbl');
+  if(line){ line.setAttribute('x1',vx.toFixed(1)); line.setAttribute('y1',vy.toFixed(1));
+            line.setAttribute('x2',ex.toFixed(1)); line.setAttribute('y2',ey.toFixed(1)); }
+  if(dot) { dot.setAttribute('cx',ex.toFixed(1)); dot.setAttribute('cy',ey.toFixed(1)); }
+  if(lbl) { lbl.setAttribute('x',(ex+6).toFixed(1)); lbl.setAttribute('y',(ey-2).toFixed(1)); }
+}
+
+/* ── VELOCITY VECTOR ──────────────────────────────────────────── */
+function updateVelVector(vx, vy){
+  if(!vizFilters.vel || trail.length < 2) return;
+  const n  = trail.length;
+  const dx = trail[n-1].x - trail[n-2].x;
+  const dy = trail[n-1].y - trail[n-2].y;
+  const len = Math.sqrt(dx*dx + dy*dy) || 1;
+  const scale = 28;   /* arrow visual length */
+  const ax = vx + (dx/len)*scale;
+  const ay = vy + (dy/len)*scale;
+  const line = document.getElementById('vel-line');
+  const lbl  = document.getElementById('vel-lbl');
+  if(line){ line.setAttribute('x1',vx.toFixed(1)); line.setAttribute('y1',vy.toFixed(1));
+            line.setAttribute('x2',ax.toFixed(1)); line.setAttribute('y2',ay.toFixed(1)); }
+  if(lbl) { lbl.setAttribute('x',(ax+4).toFixed(1)); lbl.setAttribute('y',(ay+3).toFixed(1));
+            lbl.textContent = approachRate.toFixed(2)+' m/s'; }
+}
+
+/* ── POSITION UNCERTAINTY ELLIPSE ────────────────────────────── */
+function updateUncertainty(vx, vy){
+  if(!vizFilters.uncert) return;
+  /* Shrink as ODC fuses more data sources */
+  const base = 26;
+  uncertSize  = Math.max(6, base - odcDec * 0.22);
+  const el = document.getElementById('uncert-ellipse');
+  if(el){
+    el.setAttribute('cx', vx.toFixed(1)); el.setAttribute('cy', vy.toFixed(1));
+    el.setAttribute('rx', (uncertSize * 1.5).toFixed(1));
+    el.setAttribute('ry', (uncertSize * 0.8).toFixed(1));
+  }
+}
+
+/* ── PROFILE VIEW UPDATE ──────────────────────────────────────── */
+/* x_for_t(t) = 55 + ((t+20)/60)*700
+   y_for_r(r) = 10 + ((2000-r)/2000)*240  */
+function xft(t){ return 55 + ((t+20)/60)*700; }
+function yfr(r){ return 10 + ((2000 - Math.max(0,r))/2000)*240; }
+
+function updateProfileView(){
+  /* Add current actual point if not duplicate */
+  const tNow = 0;
+  const last = profileActualPts[profileActualPts.length-1];
+  if(last.t < tNow){
+    profileActualPts.push({t:tNow, r:range});
+  } else {
+    last.r = range; /* update current */
+  }
+  /* Redraw actual polyline */
+  const pts = profileActualPts.map(p=>xft(p.t).toFixed(1)+','+yfr(p.r).toFixed(1)).join(' ');
+  const line = document.getElementById('profile-actual');
+  const dot  = document.getElementById('profile-dot');
+  if(line) line.setAttribute('points', pts);
+  if(dot) {
+    const cx = xft(tNow), cy = yfr(range);
+    dot.setAttribute('cx', cx.toFixed(1));
+    dot.setAttribute('cy', cy.toFixed(1));
+  }
+  /* Update NOW cursor */
+  const now = document.getElementById('profile-now');
+  if(now){
+    const nx = xft(tNow);
+    now.setAttribute('x1', nx.toFixed(1));
+    now.setAttribute('x2', nx.toFixed(1));
+  }
+}
+
+/* ══ PANEL COLLAPSE ════════════════════════════════════════ */
+/* ── Panel & timeline collapse ─────────────────────────────── */
+let vizFull = false;
+
+function togglePanel(side){
+  if(vizFull) return; // ignore while in full viz mode
+  const el = document.getElementById(side+'-panel');
+  const expanded = !el.classList.contains('collapsed');
+  el.classList.toggle('collapsed', expanded);
+  const btn = document.getElementById(side==='left'?'lp-toggle':'rp-toggle');
+  if(btn) btn.setAttribute('aria-expanded', String(!expanded));
+  // Flip the toggle arrow SVG path
+  const svg = btn ? btn.querySelector('svg') : null;
+  if(svg && side==='left'){
+    svg.querySelector('path').setAttribute('d', expanded ? 'M6 1L2 6L6 11' : 'M2 1L6 6L2 11');
+  }
+  if(svg && side==='right'){
+    svg.querySelector('path').setAttribute('d', expanded ? 'M2 1L6 6L2 11' : 'M6 1L2 6L6 11');
+  }
+  // Rebuild timeline after resize
+  requestAnimationFrame(()=>{ if(typeof tlBuild==='function') tlBuild(); });
+}
+
+function toggleTimeline(){
+  const panel = document.getElementById('tl-panel');
+  const btn   = document.getElementById('tl-toggle');
+  const collapsed = panel.classList.toggle('collapsed');
+  if(btn) btn.setAttribute('aria-expanded', String(!collapsed));
+  // Rebuild after transition
+  setTimeout(()=>{ if(typeof tlBuild==='function') tlBuild(); }, 240);
+}
+
+function toggleFullViz(){
+  vizFull = !vizFull;
+  const ws  = document.querySelector('.workspace');
+  const btn = document.getElementById('fs-btn');
+  if(!ws || !btn) return;
+
+  if(vizFull){
+    // Collapse everything
+    ws.classList.add('viz-full');
+    btn.classList.add('active');
+    btn.innerHTML = `<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 1H1v3M8 1h3v3M11 8v3H8M4 11H1V8"/></svg> RESTORE`;
+    btn.setAttribute('aria-label', 'Restore panels');
+  } else {
+    ws.classList.remove('viz-full');
+    btn.classList.remove('active');
+    btn.innerHTML = `<svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 4V1h3M8 1h3v3M11 8v3H8M4 11H1V8"/></svg> EXPAND`;
+    btn.setAttribute('aria-label', 'Toggle full-screen trajectory visualizer');
+  }
+  requestAnimationFrame(()=>{ if(typeof tlBuild==='function') tlBuild(); });
+}
+
+/* Keyboard shortcut: F to toggle full viz, Escape to exit */
+document.addEventListener('keydown', e => {
+  if(e.key === 'f' || e.key === 'F'){
+    if(e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON'){
+      toggleFullViz();
+    }
+  }
+  if(e.key === 'Escape'){
+    if(document.getElementById('burn-ctx-menu').style.display !== 'none') ctx_close();
+    else if(vizFull) toggleFullViz();
+  }
+});
+
+/* ══ TAB SWITCHING ═════════════════════════════════════════ */
+function setLTab(id,btn){
+  document.querySelectorAll('#left-panel .tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#left-panel .ptab').forEach(b=>{b.classList.remove('active');b.setAttribute('aria-selected','false')});
+  document.getElementById('lp-'+id).classList.add('active');
+  btn.classList.add('active');btn.setAttribute('aria-selected','true');
+}
+
+/* ══ VEHICLE SELECTION ══════════════════════════════════════ */
+
+
+/* ══ MISSION STATE ══════════════════════════════════════════ */
+let range     = 847;
+let ct        = 12;       // cross-track metres
+let rate      = 0.45;     // m/s
+let blackoutIn= 167;      // seconds until blackout
+let boActive  = false;
+let boResume  = 0;
+const BO_DUR  = 840;
+let freshSecs = 0;
+let naCD      = 252;      // next action countdown secs
+let odcDec    = 47;
+let trajDec   = 28;
+let metSecs   = 15737;    // mission elapsed time seconds (T+04:22:17)
+
+// SVG coords: target (400,50), range 0-2000m maps y=50..580
+const TX=400, TY=50, RANGE_PX=530, CT_SC=0.52;
+const TRAIL_MAX=12;
+let trail=[{x:400,y:558},{x:402,y:500},{x:404,y:440},{x:405,y:380},{x:406,y:330},{x:408,y:280},{x:410,y:240},{x:412,y:200},{x:414,y:170}];
+
+function rToY(r){ return TY+(r/2000)*RANGE_PX; }
+function ctToX(c){ return TX+c*CT_SC; }
+
+/* ══ CLOCK ══════════════════════════════════════════════════ */
+function tick(){
+  const n=new Date(),p=v=>String(v).padStart(2,'0');
+  document.getElementById('clock').textContent=`${p(n.getUTCHours())}:${p(n.getUTCMinutes())}:${p(n.getUTCSeconds())}Z`;
+}
+
+/* ══ MISSION ELAPSED ════════════════════════════════════════ */
+function tickMET(){
+  metSecs++;
+  const h=Math.floor(metSecs/3600),m=Math.floor((metSecs%3600)/60),s=metSecs%60;
+  const p=v=>String(v).padStart(2,'0');
+  const fmt=`T+${p(h)}:${p(m)}:${p(s)}`;
+  document.getElementById('s-met').textContent=fmt;
+  document.querySelector('.miss-id').textContent=`OP IRONVAULT \u2014 ${fmt}`;
+}
+
+/* ══ FRESHNESS ══════════════════════════════════════════════ */
+function tickFresh(){
+  freshSecs++;
+  document.getElementById('fresh').textContent=freshSecs<60?`LIVE \u2014 ${freshSecs}s`:`LIVE \u2014 ${Math.floor(freshSecs/60)}m ${freshSecs%60}s`;
+}
+
+/* ══ VEHICLE UPDATE (every 2s) ══════════════════════════════ */
+function updateVehicle(){
+  if(boActive) return;
+  range=Math.max(120,range-rate*2);
+  ct=ct*0.96+(Math.random()-.5)*0.8;
+  const corridorHW=range*0.055;
+  const dev=Math.abs(ct)/corridorHW;
+  const vx=ctToX(ct), vy=rToY(range);
+
+  // Update stats
+  document.getElementById('s-range').textContent=Math.round(range)+'m';
+  document.getElementById('tr-range').textContent=Math.round(range)+'m';
+  document.getElementById('vc-range').textContent=Math.round(range)+'m';
+  document.getElementById('osc-r').textContent=Math.round(range)+'m';
+  document.getElementById('tr-ct').textContent=(ct>=0?'+':'')+ct.toFixed(1)+'m';
+  document.getElementById('tr-dev').textContent=dev.toFixed(2)+'\u03c3';
+  document.getElementById('tr-rate').textContent=rate.toFixed(2)+' m/s';
+  const eta=Math.round(range/rate/60);
+  document.getElementById('tr-eta').textContent='~'+eta+' min';
+
+  // Corridor badge
+  const badge=document.getElementById('corr-badge');
+  if(Math.abs(ct)<corridorHW*.9){badge.className='corr-badge in';badge.textContent='IN CORRIDOR';}
+  else{badge.className='corr-badge warn';badge.textContent='DEVIATION';}
+
+  // Dev overlay in SVG
+  document.getElementById('dev-overlay').textContent=dev.toFixed(2)+'\u03c3';
+  document.getElementById('dev-status').textContent=Math.abs(ct)<corridorHW*.9?'WITHIN CORRIDOR':'APPROACHING LIMIT';
+  document.getElementById('dev-overlay').setAttribute('fill',Math.abs(ct)<corridorHW*.9?'#fff':'#fff');
+
+  // SVG vehicle
+  ['v-dot','v-glow1','v-glow2','v-glow3'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.setAttribute('cx',vx.toFixed(1));el.setAttribute('cy',vy.toFixed(1));}
+  });
+  const vl=document.getElementById('v-label');
+  if(vl){vl.setAttribute('x',(vx+12).toFixed(1));vl.setAttribute('y',vy.toFixed(1));}
+
+  // Trail
+  trail.push({x:parseFloat(vx.toFixed(1)),y:parseFloat(vy.toFixed(1))});
+  if(trail.length>TRAIL_MAX) trail.shift();
+  const trailEl=document.getElementById('traj-trail');
+  if(trailEl) trailEl.setAttribute('points',trail.map(p=>p.x+','+p.y).join(' '));
+
+  // Future path line
+  const fl=document.getElementById('future-line');
+  if(fl){fl.setAttribute('x1',vx.toFixed(1));fl.setAttribute('y1',vy.toFixed(1));}
+
+  // ODC autonomous decisions
+  if(Math.abs(ct)<2&&Math.random()<.10){
+    odcDec++;trajDec++;
+    document.getElementById('s-odc').textContent=odcDec;
+    document.getElementById('odc-dec').textContent=odcDec;
+    document.getElementById('wl-auto').textContent=odcDec;
+    document.getElementById('wl-traj').textContent=trajDec;
+    const r2=((odcDec/(odcDec+6))*100).toFixed(1);
+    document.getElementById('wl-rate').textContent=r2+'%';
+    document.getElementById('wl-fill').style.width=r2+'%';
+    addTL('ODC auto \u2014 trajectory micro-correction \u2014 cross-track restored','auto','APEX-ODC-LEO-03 \u00b7 Autonomous');
+  }
+}
+
+/* ══ COUNTDOWNS ═════════════════════════════════════════════ */
+function tickCountdowns(){
+  naCD=Math.max(0,naCD-1);
+  const nm=Math.floor(naCD/60),ns=naCD%60;
+  const nfmt=naCD>0?`T\u221204:${String(nm).padStart(2,'0')}:${String(ns).padStart(2,'0')}`:'BREACHED';
+  // Use simple T-MM:SS
+  const nf2=naCD>0?`T\u2212${String(Math.floor(naCD/60)).padStart(2,'0')}:${String(naCD%60).padStart(2,'0')}`:'BREACHED';
+  document.getElementById('na-cd').textContent=nf2;
+  document.getElementById('timer-1').textContent=nf2;
+
+  if(!boActive){
+    blackoutIn--;
+    const m=Math.floor(Math.abs(blackoutIn)/60),s=Math.abs(blackoutIn)%60;
+    const fmt=`T\u2212${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    document.getElementById('s-bo').textContent=fmt;
+    document.getElementById('bo-timer').textContent=fmt;
+    document.getElementById('timer-3').textContent=`T+${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    if(blackoutIn<=0) enterBlackout();
+    const pm=Math.floor(blackoutIn/60),ps=blackoutIn%60;
+    if(pm>=0&&ps>=0) document.getElementById('cc-peterson').textContent=`T\u2212${String(pm).padStart(2,'0')}:${String(ps).padStart(2,'0')} \u00b7 Ka-Band \u00b7 Policy Uplink`;
+  } else {
+    boResume--;
+    const m=Math.floor(Math.max(0,boResume)/60),s=Math.max(0,boResume)%60;
+    document.getElementById('bo-resume').textContent=`COMM RESUME IN ${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    document.getElementById('s-bo').textContent=`BO+${String(Math.floor((BO_DUR-boResume)/60)).padStart(2,'0')}:${String((BO_DUR-boResume)%60).padStart(2,'0')}`;
+    if(boResume<=0) exitBlackout();
+  }
+}
+
+function setTier(id,cls,stat){
+  document.getElementById('t-'+id).className='tier '+cls;
+  document.getElementById('ts-'+id).textContent=stat;
+}
+
+function enterBlackout(){
+  boActive=true;boResume=BO_DUR;
+  setTier('ground','warn','Monitoring');
+  setTier('vehicle','warn','Armed');
+  document.getElementById('s-bo').style.color='var(--mil-hostile)';
+  document.getElementById('s-phase').textContent='BLACKOUT / ODC AUTO';
+  document.getElementById('traj-phase').textContent='BLACKOUT \u2014 ODC AUTO';
+  document.getElementById('bo-overlay').classList.add('show');
+  const bb=document.getElementById('bo-box');bb.classList.add('active');
+  document.getElementById('bo-title').textContent='BLACKOUT IN PROGRESS';
+  document.getElementById('bo-timer').textContent='LINK DOWN';
+  document.getElementById('bo-timer').style.color='var(--mil-hostile)';
+  document.getElementById('bo-sub').textContent='ODC executing within approved envelope';
+  document.getElementById('link-pct').textContent='0%';document.getElementById('link-pct').className='ct-val bad';
+  document.getElementById('link-fill').style.width='0%';document.getElementById('link-fill').style.background='var(--mil-hostile)';
+  document.getElementById('comm-sta').textContent='NO LINK \u2014 EXPECTED';
+  document.getElementById('soh-odc').textContent='Active (autonomous) \u00b7 12ms';
+  document.getElementById('odc-status').textContent='Executing autonomously';
+  addTL('Comm blackout started \u2014 ODC executing autonomously within approved envelope','warn','APEX-ODC-LEO-03 \u00b7 Blackout');
+}
+
+function exitBlackout(){
+  boActive=false;
+  setTier('ground','active','Active');setTier('vehicle','standby','Standby');
+  document.getElementById('s-bo').style.color='var(--mil-friend)';
+  document.getElementById('s-bo').textContent='RESTORED';
+  document.getElementById('s-phase').textContent='TERMINAL APPR.';
+  document.getElementById('traj-phase').textContent='TERMINAL APPROACH';
+  document.getElementById('bo-overlay').classList.remove('show');
+  const bb=document.getElementById('bo-box');bb.classList.remove('active');
+  document.getElementById('bo-title').textContent='BLACKOUT \u2014 COMPLETED';
+  document.getElementById('bo-timer').textContent='LINK RESTORED';
+  document.getElementById('bo-timer').style.color='var(--mil-friend)';
+  document.getElementById('bo-sub').textContent='Post-blackout audit log available';
+  document.getElementById('link-pct').textContent='94%';document.getElementById('link-pct').className='ct-val ok';
+  document.getElementById('link-fill').style.width='94%';document.getElementById('link-fill').style.background='var(--mil-friend)';
+  document.getElementById('comm-sta').textContent='Peterson SFB Relay 3';
+  document.getElementById('soh-odc').textContent='Active \u00b7 12ms';
+  document.getElementById('odc-status').textContent='Active \u00b7 Executing';
+  addTL('Comm restored \u2014 blackout completed nominal \u2014 audit log available','done','APEX-ODC-LEO-03 \u00b7 Blackout End');
+}
+
+/* ══ QUEUE ACTIONS ══════════════════════════════════════════ */
+function resolveCard(n,action,label){
+  const card=document.getElementById('card-'+n);
+  const res=document.getElementById('res-'+n);
+  const txt=document.getElementById('res-'+n+'-txt');
+  if(!card||card.classList.contains('resolving')) return;
+  txt.textContent=label;txt.className='res-txt '+(action==='ok'?'ok':'no');
+  res.classList.add('show');
+  const msgs={
+    1:{ok:'Burn approved \u2014 SF-OPS-DELTA-7 \u2014 executing at T+00:18',no:'Burn modified \u2014 revised params pending'},
+    2:{ok:'Approach window revised 8\u219212 min \u2014 fuel margin secured',no:'Override applied \u2014 original params retained'},
+    3:{ok:'Blackout proceed confirmed \u2014 ODC authorized',no:'Approach delayed \u2014 holding at current range'}
+  };
+  setTimeout(()=>{
+    card.classList.add('resolving');
+    addTL(msgs[n][action],'done',`EVT-B0${6+n} \u00b7 SF-OPS-DELTA-7`);
+    if(n===2&&action==='ok') rate=0.32;
+    if(n===1){
+      document.getElementById('na-title').textContent='Approach window \u2014 fuel margin review';
+      document.getElementById('na-title').className='na-title';naCD=524;
+    }
+  },1300);
+}
+
+/* ══ TIMELINE ═══════════════════════════════════════════════ */
+function addTL(text,cls,ref){
+  const log=document.getElementById('tl-log');
+  const now=new Date(),p=v=>String(v).padStart(2,'0');
+  const ts=`${p(now.getUTCHours())}:${p(now.getUTCMinutes())}:${p(now.getUTCSeconds())}Z`;
+  const cols={'done':'var(--mil-friend)','auto':'#aaa','warn':'#fff','':'var(--t3)'};
+  const dotColor=cols[cls]||'var(--t3)';
+  const div=document.createElement('div');div.className='tl-entry';
+  div.innerHTML=`<div class="tl-time">${ts}</div><div><div class="tl-text ${cls}"><span class="tl-dot" style="background:${dotColor}" aria-hidden="true"></span>${text}</div><div class="tl-ref">${ref}</div></div>`;
+  log.insertBefore(div,log.firstChild);
+  freshSecs=0;
+}
+
+/* ══ INIT ═══════════════════════════════════════════════════ */
+tick();
+setInterval(tick,1000);
+setInterval(tickFresh,1000);
+setInterval(tickMET,1000);
+setInterval(tickCountdowns,1000);
+setInterval(updateVehicle,2000);
+
+/* ══ TIMELINE ══════════════════════════════════════════════════════════════════*/
+const TL_DUR = 22920; // total mission seconds (T+06:22:00)
+const TL_NOW_INIT = 15737; // T+04:22:17 at page load
+
+// Mission trajectory keyframes [seconds, range_m, ct_m]
+const TRAJ_KF = [
+  [0,      99999, 0],
+  [258,    99999, 0],
+  [1082,   4800,  0],
+  [3734,   3800,  4],
+  [5621,   2900,  8],
+  [7495,   2500,  10],
+  [9077,   2100,  12],
+  [9535,   1900,  10],
+  [9963,   1800,  9],
+  [11662,  1400,  7],
+  [12666,  1200,  5],
+  [13638,  1100,  14],
+  [14130,  1050,  10],
+  [14531,  960,   8],
+  [14899,  920,   12],
+  [15164,  860,   11],
+  [15422,  847,   12],
+  [15737,  820,   12],
+  [15904,  780,   10],
+  [16744,  520,   5],
+  [19800,  200,   3],
+  [21720,  80,    1],
+  [22200,  30,    0],
+  [22620,  5,     0],
+  [22920,  0,     0],
+];
+
+// Mission phases
+const TL_PHASES = [
+  {s:0,     e:1082,  label:'Launch & Ascent',       cls:'clip-phase-launch'},
+  {s:1082,  e:3734,  label:'Orbit Insertion',        cls:'clip-phase-oi'},
+  {s:3734,  e:9963,  label:'Phasing Operations',     cls:'clip-phase-phasing'},
+  {s:9963,  e:11662, label:'Far-Field Approach',     cls:'clip-phase-ff'},
+  {s:11662, e:15737, label:'Near-Field / Terminal',  cls:'clip-phase-nf'},
+  {s:15737, e:19800, label:'Terminal Approach',      cls:'clip-phase-ta'},
+  {s:19800, e:22200, label:'Final Approach',         cls:'clip-phase-fa'},
+  {s:22200, e:22920, label:'Docking',                cls:'clip-phase-dock'},
+];
+
+// Burns: t=center, w=display width in seconds
+const TL_BURNS = [
+  {t:1082,  w:600,  label:'B01 LEO Circularization',    done:true},
+  {t:3734,  w:600,  label:'B02 Hohmann Transfer',        done:true},
+  {t:5621,  w:500,  label:'B03 Period Adjustment',       done:true},
+  {t:7495,  w:500,  label:'B04 Co-Elliptic Approach',    done:true},
+  {t:9535,  w:500,  label:'B05 Approach Setup',          done:true},
+  {t:9963,  w:500,  label:'B06 Corridor Entry',          done:true},
+  {t:15164, w:400,  label:'B07 Micro-Correction',        done:true},
+  {t:15904, w:400,  label:'B08 Station-Keeping Hold',    done:false},
+  {t:19800, w:500,  label:'B09 Final Approach Burn',     done:false},
+  {t:21720, w:400,  label:'B10 Docking Translation',     done:false},
+  {t:22620, w:300,  label:'B11 Contact Capture',         done:false},
+];
+
+// Contact windows + ODC milestones merged
+const TL_CONTACTS = [
+  {s:258,   e:700,   label:'ODC Handoff',           cls:'clip-contact-relay'},
+  {s:12666, e:13500, label:'ATLAS-4 Relay',          cls:'clip-contact-relay'},
+  {s:13638, e:13750, label:'ODC Density Model Upd.', cls:'clip-contact-relay'},
+  {s:14130, e:14230, label:'ODC Auto-Corr Δv',  cls:'clip-contact-relay'},
+  {s:14899, e:14999, label:'ODC Sensor Fusion',      cls:'clip-contact-relay'},
+  {s:15164, e:15260, label:'ODC B07 Assist',         cls:'clip-contact-relay'},
+  {s:15422, e:15522, label:'ODC TLE Refresh',        cls:'clip-contact-relay'},
+  {s:18357, e:19077, label:'Peterson SFB Ka-Band',   cls:'clip-contact-ground'},
+  {s:18600, e:19200, label:'KSAT Svalbard Ka',       cls:'clip-contact-ground'},
+  {s:19800, e:20400, label:'Schriever SFB S-Band',   cls:'clip-contact-ground'},
+  {s:22200, e:22920, label:'Vandenberg S-Band',      cls:'clip-contact-ground'},
+];
+
+// Comms link quality
+const TL_COMMS = [
+  {s:0,     e:258,   label:'↑ Eastern Range Uplink',        cls:'clip-comms-good'},
+  {s:258,   e:15904, label:'↑↓ Peterson SFB Ka-Band',  cls:'clip-comms-good'},
+  {s:15904, e:16744, label:'BLACKOUT — 14 min',              cls:'clip-comms-blackout'},
+  {s:16744, e:18357, label:'↓ KSAT Svalbard Ka-Band',       cls:'clip-comms-good'},
+  {s:18357, e:19077, label:'↑↓ Peterson SFB Ka-Band',  cls:'clip-comms-good'},
+  {s:19200, e:19800, label:'↓ KSAT Svalbard Ka-Band',       cls:'clip-comms-good'},
+  {s:19800, e:20400, label:'↑↓ Schriever SFB S-Band',  cls:'clip-comms-good'},
+  {s:22200, e:22920, label:'↓ Vandenberg SFB S-Band',       cls:'clip-comms-good'},
+];
+
+// ODC autonomous event markers (point in time)
+// ODC events merged into TL_CONTACTS
+
+
+// Phase name lookup
+const PHASE_NAMES = [
+  [0,     'LAUNCH & ASCENT'],
+  [1082,  'ORBIT INSERTION'],
+  [3734,  'PHASING OPERATIONS'],
+  [9963,  'FAR-FIELD APPROACH'],
+  [11662, 'NEAR-FIELD APPROACH'],
+  [15737, 'TERMINAL APPROACH'],
+  [19800, 'FINAL APPROACH'],
+  [22200, 'DOCKING'],
+];
+function getPhase(t){
+  let name='LAUNCH & ASCENT';
+  for(const [s,n] of PHASE_NAMES){ if(t>=s) name=n; }
+  return name;
+}
+
+// Trajectory interpolation
+function tlInterp(t){
+  if(t <= TRAJ_KF[0][0]) return {range:TRAJ_KF[0][1], ct:TRAJ_KF[0][2]};
+  for(let i=1;i<TRAJ_KF.length;i++){
+    const [t0,r0,c0]=TRAJ_KF[i-1], [t1,r1,c1]=TRAJ_KF[i];
+    if(t<=t1){
+      const f=Math.max(0,Math.min(1,(t-t0)/(t1-t0)));
+      return {range:r0+(r1-r0)*f, ct:c0+(c1-c0)*f};
+    }
+  }
+  return {range:0, ct:0};
+}
+
+// ── Timeline state
+let tlCurrent  = TL_NOW_INIT; // scrubber position (mission seconds)
+let tlLiveTime = TL_NOW_INIT; // live mission clock (advances with metSecs)
+let tlZoomLev  = 1;
+let tlPlaying  = false;
+let tlSpeed    = 60;  // mission-seconds per real-second
+let tlPlayRAF  = null;
+let tlLastTS   = null;
+let tlLiveMode = true;
+let tlDragging = false;
+
+// ── DOM refs (populated after DOM ready)
+let tlInner, tlScroll, tlPH, tlNowLine;
+
+// ── Coordinate helpers
+function tlGetPxPerSec(){
+  if(!tlInner) return 0.1;
+  return tlInner.offsetWidth / TL_DUR;
+}
+function tlSecToPx(sec){ return sec * tlGetPxPerSec(); }
+function tlPxToSec(px){ return px / tlGetPxPerSec(); }
+
+// ── Format mission time
+function fmtMET(sec){
+  sec=Math.max(0,Math.round(sec));
+  const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60),s=sec%60;
+  const p=v=>String(v).padStart(2,'0');
+  return `T+${p(h)}:${p(m)}:${p(s)}`;
+}
+
+// ── Update trajectory SVG and stats for a given mission time
+function tlUpdateDisplay(t){
+  const {range, ct} = tlInterp(t);
+  const rnd = Math.round(range);
+  const corridorHW = Math.max(1, range * 0.055);
+  const dev = Math.abs(ct) / corridorHW;
+
+  // SVG coords
+  const SVG_TY=50, SVG_RANGE_PX=530, SVG_TX=400, SVG_CT_SC=0.52;
+  let vy, vx;
+  if(range >= 2000){
+    vy = 595; // off-screen below
+    vx = SVG_TX;
+  } else {
+    vy = SVG_TY + (range/2000)*SVG_RANGE_PX;
+    vx = SVG_TX + ct*SVG_CT_SC;
+  }
+
+  // Update vehicle
+  ['v-dot','v-glow1','v-glow2','v-glow3'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.setAttribute('cx',vx.toFixed(1));el.setAttribute('cy',vy.toFixed(1));}
+  });
+  const vl=document.getElementById('v-label');
+  if(vl){vl.setAttribute('x',(vx+12).toFixed(1));vl.setAttribute('y',vy.toFixed(1));}
+
+  // Compute trail (last 8 positions, 15s apart)
+  const trailPts=[];
+  for(let i=8;i>=0;i--){
+    const pt=t - i*15;
+    const {range:pr,ct:pc}=tlInterp(Math.max(0,pt));
+    const py = pr>=2000 ? 595 : SVG_TY+(pr/2000)*SVG_RANGE_PX;
+    const px = pr>=2000 ? SVG_TX : SVG_TX+pc*SVG_CT_SC;
+    trailPts.push(`${px.toFixed(1)},${py.toFixed(1)}`);
+  }
+  const trailEl=document.getElementById('traj-trail');
+  if(trailEl) trailEl.setAttribute('points',trailPts.join(' '));
+
+  // Future path
+  const fl=document.getElementById('future-line');
+  if(fl){fl.setAttribute('x1',vx.toFixed(1));fl.setAttribute('y1',vy.toFixed(1));}
+
+  // Stats update
+  if(rnd >= 2000){
+    document.getElementById('s-range').textContent = rnd > 10000 ? '>' + Math.round(rnd/1000) + 'km' : rnd+'m';
+    document.getElementById('tr-range').textContent = rnd+'m';
+    document.getElementById('tr-ct').textContent = '--';
+    document.getElementById('tr-dev').textContent = '--';
+    document.getElementById('tr-eta').textContent = '--';
+  } else {
+    document.getElementById('s-range').textContent = rnd+'m';
+    document.getElementById('tr-range').textContent = rnd+'m';
+    document.getElementById('vc-range').textContent = rnd+'m';
+    document.getElementById('osc-r').textContent = rnd+'m';
+    document.getElementById('tr-ct').textContent = (ct>=0?'+':'')+ct.toFixed(1)+'m';
+    document.getElementById('tr-dev').textContent = dev.toFixed(2)+'\u03c3';
+    // ETA
+    const {range:r2}=tlInterp(t+60);
+    const rateEst = (range - r2) / 60;
+    const etaMin = rateEst > 0 ? Math.round(range/rateEst/60) : '?';
+    document.getElementById('tr-eta').textContent = '~'+etaMin+' min';
+  }
+
+  // Corridor badge
+  const badge=document.getElementById('corr-badge');
+  if(badge){
+    if(rnd <= 0){ badge.className='corr-badge in'; badge.textContent='DOCKED'; }
+    else if(rnd >= 2000){ badge.className='corr-badge in'; badge.textContent='TRANSIT'; }
+    else if(Math.abs(ct)<corridorHW*.9){ badge.className='corr-badge in'; badge.textContent='IN CORRIDOR'; }
+    else{ badge.className='corr-badge warn'; badge.textContent='DEVIATION'; }
+  }
+
+  // Dev overlay
+  const devEl=document.getElementById('dev-overlay');
+  const devStEl=document.getElementById('dev-status');
+  if(devEl){
+    devEl.textContent = rnd>=2000 ? '--' : dev.toFixed(2)+'\u03c3';
+    devEl.setAttribute('fill', Math.abs(ct)<corridorHW*.9 ? '#fff' : '#fff');
+  }
+  if(devStEl) devStEl.textContent = rnd>=2000 ? 'IN TRANSIT' : (Math.abs(ct)<corridorHW*.9?'WITHIN CORRIDOR':'APPROACHING LIMIT');
+
+  // Phase
+  const ph=getPhase(t);
+  document.getElementById('s-phase').textContent = ph.replace(/ /g,'\u00a0').length>14 ? ph.split(' ').slice(0,2).join('\u00a0') : ph;
+  document.getElementById('traj-phase').textContent = ph;
+  const tpv=document.getElementById('tl-phase-val');
+  if(tpv) tpv.textContent=ph;
+
+  // Blackout state
+  const inBO = t>=15904 && t<=16744;
+  const boOv=document.getElementById('bo-overlay');
+  if(boOv) boOv.classList.toggle('show', inBO);
+
+  // Time display
+  document.getElementById('tl-display').textContent = fmtMET(t);
+}
+
+// ── Build timeline tracks
+function tlBuild(){
+  tlInner  = document.getElementById('tl-inner');
+  tlScroll = document.getElementById('tl-scroll');
+  tlPH     = document.getElementById('tl-playhead');
+  tlNowLine= document.getElementById('tl-now-line');
+
+  const W = tlInner.offsetWidth || 900;
+  const pps = W / TL_DUR;
+
+  // Clear tracks
+  ['track-phases','track-burns','track-contacts','track-comms','track-odc','tl-ruler'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML='';
+  });
+
+  // Ruler
+  buildRuler(pps);
+
+  // Phases
+  const tp=document.getElementById('track-phases');
+  TL_PHASES.forEach(p=>{
+    const left=(p.s*pps), width=Math.max(2,(p.e-p.s)*pps);
+    tp.innerHTML+=`<div class="tl-clip ${p.cls}" style="left:${left}px;width:${width}px"
+      title="${p.label}" onclick="tlSeekTo(${p.s})">
+      <span class="tl-clip-label">${p.label}</span></div>`;
+  });
+
+  // Burns
+  const tb=document.getElementById('track-burns');
+  TL_BURNS.forEach(b=>{
+    const dispW=Math.max(50, b.w*pps);
+    const left=Math.max(0, b.t*pps - dispW/2);
+    const cls=b.done?'clip-burn-done':'clip-burn-up';
+    tb.innerHTML+=`<div class="tl-clip ${cls}" style="left:${left}px;width:${dispW}px"
+      title="${b.label}" onclick="tlSeekTo(${b.t})">
+      <span class="tl-clip-label">${b.label}</span></div>`;
+  });
+
+  // Contacts
+  const tc=document.getElementById('track-contacts');
+  TL_CONTACTS.forEach(c=>{
+    const left=c.s*pps, width=Math.max(40,(c.e-c.s)*pps);
+    tc.innerHTML+=`<div class="tl-clip ${c.cls}" style="left:${left}px;width:${width}px"
+      title="${c.label}" onclick="tlSeekTo(${c.s})">
+      <span class="tl-clip-label">${c.label}</span></div>`;
+  });
+
+  // Comms
+  const tco=document.getElementById('track-comms');
+  TL_COMMS.forEach(c=>{
+    const left=c.s*pps, width=Math.max(2,(c.e-c.s)*pps);
+    tco.innerHTML+=`<div class="tl-clip ${c.cls}" style="left:${left}px;width:${width}px"
+      title="${c.label}">
+      <span class="tl-clip-label">${c.label}</span></div>`;
+  });
+
+
+
+  // Position playhead and now line
+  tlPositionPlayhead();
+  tlPositionNow();
+
+  // Mouse events on scroll area
+  tlScroll.addEventListener('mousedown', tlOnMouseDown);
+  document.addEventListener('mousemove', tlOnMouseMove);
+  document.addEventListener('mouseup',   tlOnMouseUp);
+
+  // Drag on playhead handle
+  document.getElementById('tl-ph-handle').addEventListener('mousedown', e=>{
+    e.stopPropagation();
+    tlDragging=true;
+    e.preventDefault();
+  });
+}
+
+function buildRuler(pps){
+  const ruler=document.getElementById('tl-ruler');
+  ruler.style.width = (TL_DUR*pps)+'px';
+  // Major tick every 30 min (1800s), minor every 5 min (300s)
+  const MAJOR=1800, MINOR=300;
+  let html='';
+  for(let t=0;t<=TL_DUR;t+=MINOR){
+    const x=t*pps;
+    const isMajor=(t%MAJOR===0);
+    const h=isMajor?20:8;
+    html+=`<div class="tl-ruler-tick${isMajor?' major':''}" style="left:${x}px;height:${h}px;bottom:0"></div>`;
+    if(isMajor) html+=`<div class="tl-ruler-lbl" style="left:${x}px">${fmtMET(t)}</div>`;
+  }
+  ruler.innerHTML=html;
+  // Click on ruler to seek
+  ruler.addEventListener('mousedown', e=>{
+    const rect=ruler.getBoundingClientRect();
+    const px=e.clientX-rect.left+tlScroll.scrollLeft;
+    tlSeekTo(tlPxToSec(px));
+    tlDragging=true;
+    e.preventDefault();
+  });
+}
+
+function tlPositionPlayhead(){
+  if(!tlPH) return;
+  const x=tlSecToPx(tlCurrent);
+  tlPH.style.left=x+'px';
+  // Scroll into view if needed
+  const sv=tlScroll;
+  if(!sv) return;
+  const vw=sv.offsetWidth;
+  if(x < sv.scrollLeft || x > sv.scrollLeft+vw-20){
+    sv.scrollLeft = Math.max(0, x - vw*0.45);
+  }
+}
+
+function tlPositionNow(){
+  if(!tlNowLine) return;
+  tlNowLine.style.left=tlSecToPx(tlLiveTime)+'px';
+}
+
+function tlSeekTo(sec){
+  tlCurrent=Math.max(0,Math.min(TL_DUR,sec));
+  tlLiveMode = Math.abs(tlCurrent-tlLiveTime)<30;
+  if(!tlLiveMode) tlUpdateDisplay(tlCurrent);
+  tlPositionPlayhead();
+  document.getElementById('tl-display').textContent=fmtMET(tlCurrent);
+}
+
+function tlSeekRel(delta){
+  tlSeekTo(tlCurrent+delta);
+}
+
+function tlTogglePlay(){
+  tlPlaying=!tlPlaying;
+  const btn=document.getElementById('tl-play-btn');
+  if(btn) btn.textContent=tlPlaying?'\u23F8':'\u25B6';
+  if(tlPlaying){
+    tlLastTS=null;
+    requestAnimationFrame(tlPlayTick);
+  }
+}
+
+function tlPlayTick(ts){
+  if(!tlPlaying) return;
+  if(tlLastTS!==null){
+    const elapsed=(ts-tlLastTS)/1000;
+    tlCurrent=Math.min(TL_DUR, tlCurrent+elapsed*tlSpeed);
+    tlLiveMode=Math.abs(tlCurrent-tlLiveTime)<30;
+    if(!tlLiveMode) tlUpdateDisplay(tlCurrent);
+    tlPositionPlayhead();
+    document.getElementById('tl-display').textContent=fmtMET(tlCurrent);
+    if(tlCurrent>=TL_DUR){ tlPlaying=false; const b=document.getElementById('tl-play-btn'); if(b) b.textContent='\u25B6'; return; }
+  }
+  tlLastTS=ts;
+  requestAnimationFrame(tlPlayTick);
+}
+
+function tlSetSpeed(s, btn){
+  tlSpeed=s;
+  document.querySelectorAll('.tl-speed-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+
+function tlZoomAdj(dir){
+  const levels=[0.5,1,2,4,8];
+  let idx=levels.indexOf(tlZoomLev);
+  if(idx<0) idx=1;
+  idx=Math.max(0,Math.min(levels.length-1,idx+dir));
+  tlZoomLev=levels[idx];
+  const lbl=document.getElementById('tl-zoom-lbl');
+  if(lbl) lbl.textContent=tlZoomLev+'&#215;';
+  // Resize inner and rebuild
+  if(tlInner){
+    const baseW=tlScroll.offsetWidth;
+    tlInner.style.width=(Math.max(baseW, TL_DUR*(baseW/TL_DUR)*tlZoomLev))+'px';
+    tlBuild();
+  }
+}
+
+// Mouse event handlers
+function tlOnMouseDown(e){
+  const rect=tlScroll.getBoundingClientRect();
+  const px=e.clientX-rect.left+tlScroll.scrollLeft;
+  tlSeekTo(tlPxToSec(px));
+  tlDragging=true;
+}
+function tlOnMouseMove(e){
+  if(!tlDragging||!tlScroll) return;
+  const rect=tlScroll.getBoundingClientRect();
+  const px=e.clientX-rect.left+tlScroll.scrollLeft;
+  tlSeekTo(tlPxToSec(px));
+}
+function tlOnMouseUp(){ tlDragging=false; }
+
+// Hook into the existing metSecs tick so live time advances
+const _origTickMET = typeof tickMET === 'function' ? tickMET : null;
+function tlTickLive(){
+  tlLiveTime = metSecs; // metSecs advances in tickMET()
+  tlPositionNow();
+  if(tlLiveMode){
+    tlCurrent=tlLiveTime;
+    tlPositionPlayhead();
+    document.getElementById('tl-display').textContent=fmtMET(tlLiveTime);
+  }
+}
+
+// Init after DOM ready
+window.addEventListener('load', ()=>{
+  tlBuild();
+  tlSeekTo(TL_NOW_INIT);
+  // Patch setInterval for metSecs to also update TL live marker
+  const _origTickFresh = tickFresh;
+  // Hook into setInterval after init
+  setInterval(tlTickLive, 1000);
+});
+
+
+
+/* ══ VEHICLE SELECTION ═════════════════════════════════════════════════════════*/
+let selV = 'RAVEN-7';
+
+function selVehicle(id, role, group, el){
+  // Update card highlight (don't switch tabs)
+  document.querySelectorAll('.vcard').forEach(c=>{
+    c.classList.remove('selected');
+    c.classList.toggle('ours', false);
+  });
+  el.classList.add('selected');
+  if(id==='RAVEN-7') el.classList.add('ours');
+  selV = id;
+
+  // Update selected-vehicle tile in stats bar
+  document.getElementById('sv-name').textContent = id;
+  document.getElementById('sv-role').textContent = role.replace(/&middot;/g,'\u00b7').replace(/&[a-z]+;/g,'');
+  document.getElementById('sv-lbl').textContent  = group;
+
+  // SOH panel switch (for the SOH tab if it's visible)
+  ['RAVEN-7','ATLAS-4','ATLAS-5','USA-342','USA-289','GEODSS-4','OSC-DEMO','NORAD-48821','COSMOS-2558'].forEach(v=>{
+    const d=document.getElementById('soh-'+v.replace('-','_'));
+    if(d) d.style.display='none';
+  });
+  ['RAVEN-7','ATLAS-4','OSC-DEMO','GEODSS-4'].forEach(v=>{
+    const d=document.getElementById('soh-'+v);
+    if(d) d.style.display = v===id ? '' : 'none';
+  });
+
+  // If not RAVEN-7, clear timeline and queue
+  if(id!=='RAVEN-7'){
+    clearForVehicle(id);
+  } else {
+    restoreRaven7();
+  }
+}
+
+function clearForVehicle(id){
+  // Clear timeline log
+  const tl=document.getElementById('tl-log');
+  if(tl) tl.innerHTML=`<div style="padding:32px 16px;text-align:center;
+    font-family:var(--mono);font-size:10px;color:var(--t3);
+    letter-spacing:.12em;text-transform:uppercase;line-height:2.2">
+    No mission timeline data<br>for ${id}.<br>
+    <span style="color:var(--t3);font-size:9px">Select RAVEN-7 to view OP IRONVAULT</span>
+    </div>`;
+  // Clear queue list
+  const ql=document.getElementById('aq-list');
+  if(ql) ql.innerHTML=`<div style="padding:32px 18px;text-align:center;
+    font-family:var(--mono);font-size:10px;color:var(--t3);
+    letter-spacing:.12em;text-transform:uppercase;line-height:2.2">
+    No active mission queue<br>for ${id}.<br>
+    <span style="color:var(--t3);font-size:9px">Select RAVEN-7 to view OP IRONVAULT</span>
+    </div>`;
+  // Update next-action
+  const na=document.getElementById('na-title');
+  if(na){ na.textContent=`${id} \u2014 No active approach`; na.className='na-title'; }
+  const cd=document.getElementById('na-cd');
+  if(cd) cd.textContent='\u2014';
+}
+
+function restoreRaven7(){
+  location.reload(); // Simple: reload to restore full state
+}
+
+/* ══ CONTACT WINDOW COUNTDOWN ═════════════════════════════════════════════════*/
+// Contact windows: [name, offset from now in seconds, duration min, band]
+const CW_WINDOWS = [
+  {name:'Peterson SFB', sec:2820, dur:12, band:'Ka-Band \u00b7 Policy Uplink + Telemetry'},
+  {name:'KSAT Svalbard', sec:4080, dur:10, band:'Ka-Band \u00b7 Telemetry Downlink'},
+  {name:'Schriever SFB', sec:4920, dur:8,  band:'S-Band \u00b7 Telemetry'},
+];
+let cwBase = Date.now(); // epoch when page loaded
+
+function tickContactWindows(){
+  const now = Date.now();
+  CW_WINDOWS.forEach((w,i)=>{
+    const remaining = Math.round(w.sec - (now-cwBase)/1000);
+    const id = i+1;
+    const tEl = document.getElementById('cwt-'+id);
+    if(!tEl) return;
+    if(remaining <= 0){
+      tEl.textContent='IN WINDOW';
+      tEl.style.color='var(--lime)';
+    } else {
+      const m=Math.floor(remaining/60), s=remaining%60;
+      const p=v=>String(v).padStart(2,'0');
+      tEl.textContent=`T\u2212${p(m)}:${p(s)}`;
+    }
+  });
+}
+setInterval(tickContactWindows, 1000);
+tickContactWindows();
+
+/* ══ RIGHT-CLICK ADD BURN ══════════════════════════════════════════════════════*/
+let ctx_burnSec = 0;
+
+/* ── Burn template helpers ─────────────────────────────── */
+let ctx_selectedName = '';
+let ctx_selectedDv   = '';
+let ctx_selectedMeta = '';
+
+function ctx_useTemplate(name, dv, meta){
+  // Store selection
+  ctx_selectedName = name;
+  ctx_selectedDv   = dv;
+  ctx_selectedMeta = meta;
+  // Immediately add the burn and close — clicking a template IS the confirm action
+  ctx_addBurn();
+}
+
+
+function ctx_showCustom(){
+  ctx_selectedName = '';
+  ctx_selectedDv   = '';
+  document.getElementById('ctx-custom-fields').style.display = 'block';
+  setTimeout(()=>document.getElementById('ctx-burn-name').focus(), 0);
+}
+
+function ctx_open(sec, clientX, clientY){
+  ctx_burnSec = sec;
+  ctx_selectedName = ''; ctx_selectedDv = ''; ctx_selectedMeta = '';
+  // Reset template highlights
+  document.querySelectorAll('.ctx-tpl-btn').forEach(b=>{
+    b.style.background='';
+    const n=b.querySelector('.ctx-tpl-name'); if(n) n.style.color='';
+  });
+  document.getElementById('ctx-custom-fields').style.display='none';
+  const nameEl=document.getElementById('ctx-burn-name'); if(nameEl) nameEl.value='';
+  const dvEl=document.getElementById('ctx-burn-dv'); if(dvEl) dvEl.value='';
+  const menu = document.getElementById('burn-ctx-menu');
+  menu.style.display='block';
+  // Position near cursor
+  const vw=window.innerWidth, vh=window.innerHeight;
+  let x=clientX+4, y=clientY+4;
+  if(x+240>vw) x=clientX-244;
+  if(y+200>vh) y=clientY-204;
+  menu.style.left=x+'px'; menu.style.top=y+'px';
+  // Show time
+  document.getElementById('ctx-time-lbl').textContent=fmtMET(sec);
+  document.getElementById('ctx-burn-name').value='';
+  document.getElementById('ctx-burn-dv').value='';
+  document.getElementById('ctx-burn-name').focus();
+  // Close on outside click
+  setTimeout(()=>document.addEventListener('click', ctx_outside, {once:true}), 0);
+}
+
+function ctx_outside(e){
+  const menu=document.getElementById('burn-ctx-menu');
+  if(menu && !menu.contains(e.target)) ctx_close();
+}
+
+function ctx_close(){
+  const menu=document.getElementById('burn-ctx-menu');
+  if(menu) menu.style.display='none';
+}
+
+function ctx_addBurn(){
+  // Use template if selected, otherwise read custom fields
+  let name, dv;
+  if(ctx_selectedName){
+    name = ctx_selectedName;
+    dv   = ctx_selectedDv;
+  } else {
+    const nameEl = document.getElementById('ctx-burn-name');
+    const dvEl   = document.getElementById('ctx-burn-dv');
+    name = (nameEl && nameEl.value.trim()) || 'Custom Burn';
+    dv   = (dvEl   && dvEl.value.trim())   || '--';
+  }
+  // Add to TL_BURNS
+  TL_BURNS.push({t:ctx_burnSec, w:400, label:`${name} \u2014 ${dv}`, done:false});
+  TL_BURNS.sort((a,b)=>a.t-b.t);
+  // Rebuild timeline
+  tlBuild();
+  // Add card to queue
+  const ql=document.getElementById('aq-list');
+  if(ql){
+    const div=document.createElement('article');
+    div.className='aq-card aq-info';
+    div.setAttribute('role','listitem');
+    div.innerHTML=`<div class="aq-top" aria-hidden="true">
+      <span class="aq-badge INFO">BURN \u00b7 USER-ADDED</span>
+      <span class="aq-timer">${fmtMET(ctx_burnSec)}</span>
+    </div>
+    <div class="aq-title">${name} \u2014 ${dv}</div>
+    <div class="aq-sec">User-Defined Burn</div>
+    <div class="aq-propose">Added via timeline right-click at ${fmtMET(ctx_burnSec)}. Requires ODC authorization before execution.</div>`;
+    // Insert in the right position
+    const cards=[...ql.children];
+    ql.appendChild(div);
+  }
+  addTL(`User-added burn: ${name} (${dv}) at ${fmtMET(ctx_burnSec)}`, 'auto', 'User \u00b7 Custom Burn');
+  ctx_close();
+}
+
+// Attach right-click listener to burns track after build
+const _origTlBuild = window.tlBuild;
+window.addEventListener('load', ()=>{
+  // Patch right-click into burns track after initial build
+  setTimeout(()=>{
+    const bt=document.getElementById('track-burns');
+    if(bt){
+      bt.addEventListener('contextmenu', e=>{
+        e.preventDefault();
+        const rect=document.getElementById('tl-scroll').getBoundingClientRect();
+        const px=e.clientX - rect.left + document.getElementById('tl-scroll').scrollLeft;
+        const sec=tlPxToSec(px);
+        ctx_open(Math.round(sec), e.clientX, e.clientY);
+      });
+    }
+    const ruler=document.getElementById('tl-ruler');
+    if(ruler){
+      ruler.addEventListener('contextmenu', e=>{ e.preventDefault(); });
+    }
+  }, 800);
+});
+
+/* ══ RESOLVE CARD (extended for contact booking) ══════════════════════════════*/
+// Override resolveCard to handle contact booking (cards without res-banner)
+const _resolveCardOrig = resolveCard;
+function resolveCard(n, action, label){
+  const card=document.getElementById('card-'+n);
+  if(!card||card.classList.contains('resolving')) return;
+  const res=document.getElementById('res-'+n);
+  if(res){
+    const txt=document.getElementById('res-'+n+'-txt');
+    if(txt){txt.textContent=label;txt.className='res-txt '+(action==='ok'?'ok':'no');}
+    res.classList.add('show');
+  }
+  setTimeout(()=>{
+    card.classList.add('resolving');
+    addTL(label+' \u2014 confirmed by SF-OPS-DELTA-7','done',`Queue Card ${n} \u00b7 Action`);
+    if(n===2&&action==='ok') rate=0.32;
+    if(n===1){
+      const na=document.getElementById('na-title');
+      if(na){na.textContent='Approach Window \u2014 Fuel Margin Review';na.className='na-title';}
+      naCD=524;
+    }
+  }, 1300);
+}
+
+/* ══ ACTIVITY DETAIL POPUP ═════════════════════════════════════════════════════*/
+let tdp_active = null;   // { trackKey, index, clipEl }
+
+const TRACK_META = {
+  phases:   { label: 'PHASES',          color: '#aaa' },
+  burns:    { label: 'BURNS',           color: 'var(--lime)' },
+  contacts: { label: 'CONTACTS / ODC',  color: '#ccc' },
+  comms:    { label: 'UPLINK / DL',     color: '#888' },
+};
+
+function tdp_open(trackKey, dataObj, clipEl, clientX, clientY){
+  tdp_active = { trackKey, dataObj, clipEl };
+  const popup = document.getElementById('tl-detail-popup');
+  const meta  = TRACK_META[trackKey] || { label: trackKey.toUpperCase(), color: '#ccc' };
+
+  document.getElementById('tdp-track-label').textContent = meta.label;
+  document.getElementById('tdp-track-label').style.color  = meta.color;
+  document.getElementById('tdp-time').textContent = dataObj.timeLabel || '';
+  document.getElementById('tdp-title').textContent = dataObj.title || dataObj.label || '';
+  document.getElementById('tdp-meta').innerHTML   = dataObj.meta  || '';
+
+  // Show/hide delete button: only for user-added or non-phase items
+  const delBtn = document.getElementById('tdp-delete-btn');
+  if(delBtn) delBtn.style.display = trackKey === 'phases' ? 'none' : '';
+
+  // Position popup near click, keep in viewport
+  popup.style.display = 'block';
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const pw = 320, ph = 160;
+  let x = clientX + 8, y = clientY + 8;
+  if(x + pw > vw) x = clientX - pw - 8;
+  if(y + ph > vh) y = clientY - ph - 8;
+  popup.style.left = x + 'px';
+  popup.style.top  = y + 'px';
+
+  // Close on outside click
+  setTimeout(()=> document.addEventListener('click', tdp_outside, { once: true }), 0);
+}
+
+function tdp_outside(e){
+  const popup = document.getElementById('tl-detail-popup');
+  if(popup && !popup.contains(e.target)) tdp_close();
+}
+
+function tdp_close(){
+  document.getElementById('tl-detail-popup').style.display = 'none';
+  tdp_active = null;
+}
+
+function tdp_delete(){
+  if(!tdp_active) return;
+  const { trackKey, dataObj, clipEl } = tdp_active;
+
+  // Use _orig reference for array lookup (dataObj is a display wrapper)
+  const orig = dataObj._orig || dataObj;
+
+  // Remove from the data array
+  if(trackKey === 'burns'){
+    const idx = TL_BURNS.indexOf(orig);
+    if(idx > -1) TL_BURNS.splice(idx, 1);
+    else { console.warn('burn not found in TL_BURNS', orig, TL_BURNS); }
+  } else if(trackKey === 'contacts'){
+    const idx = TL_CONTACTS.indexOf(orig);
+    if(idx > -1) TL_CONTACTS.splice(idx, 1);
+  } else if(trackKey === 'comms'){
+    const idx = TL_COMMS.indexOf(dataObj);
+    if(idx > -1) TL_COMMS.splice(idx, 1);
+  }
+
+  // Animate out then rebuild
+  if(clipEl){
+    clipEl.style.transition = 'opacity .2s,transform .2s';
+    clipEl.style.opacity = '0';
+    clipEl.style.transform = 'scaleY(0)';
+    setTimeout(()=>{ tlBuild(); }, 220);
+  } else {
+    tlBuild();
+  }
+  tdp_close();
+  addTL(`Deleted: ${dataObj.label || dataObj.title}`, 'warn', 'User \u00b7 Deleted activity');
+}
+
+// Keyboard Delete when popup is open
+document.addEventListener('keydown', e => {
+  if(e.key === 'Delete' && tdp_active){
+    e.preventDefault();
+    tdp_delete();
+  }
+  if(e.key === 'Escape' && tdp_active){
+    tdp_close();
+  }
+});
+
+/* ══ MAKE TIMELINE CLIPS CLICKABLE ═════════════════════════════════════════════*/
+// Patch tlBuild to attach click handlers after rendering clips.
+// We override buildRuler and the forEach loops by wrapping tlBuild.
+const _tlBuild_orig = tlBuild;
+tlBuild = function(){
+  _tlBuild_orig();
+  // Attach click handlers to all rendered clips
+  attachClipHandlers('track-phases',   TL_PHASES,   'phases');
+  attachClipHandlers('track-burns',    TL_BURNS,    'burns');
+  attachClipHandlers('track-contacts', TL_CONTACTS, 'contacts');
+  attachClipHandlers('track-comms',    TL_COMMS,    'comms');
+};
+
+function attachClipHandlers(trackId, dataArr, trackKey){
+  const track = document.getElementById(trackId);
+  if(!track) return;
+  const clips = track.querySelectorAll('.tl-clip');
+  clips.forEach((clip, i) => {
+    const dataObj = dataArr[i];
+    if(!dataObj) return;
+    clip.style.cursor = 'pointer';
+    // Replace any existing listener by cloning
+    const newClip = clip.cloneNode(true);
+    clip.parentNode.replaceChild(newClip, clip);
+    newClip.addEventListener('click', e => {
+      e.stopPropagation();
+      // Build human-readable metadata
+      const startFmt = dataObj.s !== undefined ? fmtMET(dataObj.s) : fmtMET(dataObj.t || 0);
+      const endFmt   = dataObj.e !== undefined ? fmtMET(dataObj.e) : '';
+      const dur      = dataObj.e !== undefined ? Math.round((dataObj.e - dataObj.s)/60) + ' min' : '';
+      const dvStr    = dataObj.dv || '';
+      const meta = [
+        dataObj.s !== undefined ? `<span style="color:var(--t3)">Start</span> ${startFmt}` : `<span style="color:var(--t3)">Time</span> ${startFmt}`,
+        endFmt ? `<span style="color:var(--t3)">End</span> ${endFmt}` : '',
+        dur    ? `<span style="color:var(--t3)">Duration</span> ${dur}` : '',
+        dvStr  ? `<span style="color:var(--t3)">&#916;v</span> ${dvStr}` : '',
+        dataObj.meta_extra || '',
+      ].filter(Boolean).join('<br>');
+
+      // Pass original dataObj ref so indexOf works in tdp_delete
+      const displayData = {
+        _orig:     dataObj,          // ← original reference for splice
+        title:     dataObj.label || dataObj.title || '',
+        timeLabel: startFmt + (endFmt ? ' → ' + endFmt : ''),
+        meta,
+        dv:        dvStr,
+        meta_extra: dataObj.meta_extra || '',
+      };
+      tdp_open(trackKey, displayData, newClip, e.clientX, e.clientY);
+    });
+    // Re-attach right-click on burns track
+    if(trackKey === 'burns'){
+      newClip.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        const rect = document.getElementById('tl-scroll').getBoundingClientRect();
+        const px   = e.clientX - rect.left + document.getElementById('tl-scroll').scrollLeft;
+        ctx_open(Math.round(tlPxToSec(px)), e.clientX, e.clientY);
+      });
+    }
+  });
+}
+
+/* ══ ENHANCE ctx_addBurn — store dv on object ══════════════════════════════════*/
+// The existing ctx_addBurn pushes to TL_BURNS then calls tlBuild.
+// Patch it to also store dv and meta on the burn object so detail popup shows it.
+const _ctx_addBurn_orig = ctx_addBurn;
+ctx_addBurn = function(){
+  // Capture before calling original
+  const name = ctx_selectedName || (document.getElementById('ctx-burn-name') || {}).value || 'Custom Burn';
+  const dv   = ctx_selectedDv   || (document.getElementById('ctx-burn-dv')   || {}).value || '--';
+  const meta = ctx_selectedMeta || '';
+
+  // Call original (it pushes to TL_BURNS and calls tlBuild)
+  _ctx_addBurn_orig();
+
+  // Now find the newly added burn and annotate it
+  const newBurn = TL_BURNS.find(b => b.label && b.label.startsWith(name));
+  if(newBurn){
+    newBurn.dv = dv;
+    newBurn.meta_extra = meta ? `<span style="color:var(--t3)">Type</span> ${meta}` : '';
+    newBurn.userAdded = true;
+  }
+};
+
+
+/* ══ QUEUE FILTER ═══════════════════════════════════════════════════════════════*/
+let qCurrentFilter = 'all';
+
+// Cards that have CTAs (approval/action buttons) — identified by their sev class
+const ACTION_CLASSES = ['aq-crit', 'aq-elev'];
+
+function qFilter(mode, btn){
+  qCurrentFilter = mode;
+  // Update chip styles
+  document.querySelectorAll('.qf-chip').forEach(b=>{
+    b.classList.remove('qf-active');
+    b.setAttribute('aria-pressed','false');
+  });
+  if(btn){ btn.classList.add('qf-active'); btn.setAttribute('aria-pressed','true'); }
+
+  // Show/hide cards
+  const cards = document.querySelectorAll('#aq-list .aq-card');
+  let visibleCount = 0;
+  cards.forEach(card => {
+    let show = true;
+    if(mode === 'action'){
+      // Show only cards that have action buttons (primary aq-btn) and aren't resolving
+      const hasCTA = ACTION_CLASSES.some(cls => card.classList.contains(cls));
+      const hasBtn = card.querySelector('.aq-btn.primary') !== null;
+      const resolved = card.classList.contains('resolving');
+      show = hasCTA && hasBtn && !resolved;
+    }
+    card.style.display = show ? '' : 'none';
+    if(show) visibleCount++;
+  });
+
+  // Update next-action visibility
+  const na = document.querySelector('.next-action');
+  if(na) na.style.display = (mode === 'action' && visibleCount === 0) ? 'none' : '';
+}
+
+// Re-apply filter after resolveCard hides a card
+const _resolveCard_qf = resolveCard;
+resolveCard = function(n, action, label){
+  _resolveCard_qf(n, action, label);
+  // Re-run filter after animation
+  setTimeout(()=>{ if(qCurrentFilter !== 'all') qFilter(qCurrentFilter, null); }, 1400);
+};
+
+</script>
+
+<!-- Timeline activity detail popup -->
+<div id="tl-detail-popup" style="
+  display:none;position:fixed;z-index:500;
+  background:#0d0d0d;border:1px solid rgba(255,255,255,.28);
+  min-width:280px;max-width:320px;
+" role="dialog" aria-modal="true" aria-labelledby="tdp-title">
+
+  <!-- Header -->
+  <div style="padding:8px 12px;border-bottom:1px solid rgba(255,255,255,.10);
+    display:flex;align-items:center;justify-content:space-between">
+    <div>
+      <div style="font-family:var(--mono);font-size:8px;font-weight:700;
+        letter-spacing:.20em;text-transform:uppercase;color:var(--t3);margin-bottom:2px"
+        id="tdp-track-label">BURNS</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--lime);
+        letter-spacing:.08em" id="tdp-time">T+--:--:--</div>
+    </div>
+    <button onclick="tdp_close()"
+      style="background:transparent;border:none;color:var(--t3);cursor:pointer;
+      font-family:var(--mono);font-size:16px;line-height:1;padding:2px 6px"
+      aria-label="Close detail popup">&#215;</button>
+  </div>
+
+  <!-- Content -->
+  <div style="padding:12px">
+    <div id="tdp-title" style="font-size:13px;font-weight:700;color:#fff;
+      letter-spacing:-.01em;line-height:1.3;margin-bottom:8px"></div>
+    <div id="tdp-meta" style="font-family:var(--mono);font-size:10px;
+      color:var(--t2);letter-spacing:.06em;line-height:1.8"></div>
+  </div>
+
+  <!-- Actions -->
+  <div style="padding:8px 12px;border-top:1px solid rgba(255,255,255,.08);
+    display:flex;gap:6px">
+    <button id="tdp-delete-btn" onclick="tdp_delete()"
+      style="flex:1;background:transparent;border:1px solid rgba(255,255,255,.22);
+      color:#fff;font-family:var(--mono);font-size:9px;font-weight:700;
+      letter-spacing:.16em;text-transform:uppercase;padding:7px;cursor:pointer;
+      transition:background .1s"
+      aria-label="Delete this activity (or press Delete key)">
+      DELETE
+    </button>
+    <button onclick="tdp_close()"
+      style="background:transparent;border:1px solid rgba(255,255,255,.14);
+      color:var(--t3);font-family:var(--mono);font-size:9px;letter-spacing:.12em;
+      text-transform:uppercase;padding:7px 12px;cursor:pointer"
+      aria-label="Close">CLOSE</button>
+  </div>
+</div>
+
+</body>
+</html>
